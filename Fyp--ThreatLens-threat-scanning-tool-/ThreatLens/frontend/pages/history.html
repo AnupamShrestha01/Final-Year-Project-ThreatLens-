@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan History — ThreatLens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0d0d1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        /* ── Header ── */
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5em;
+            color: #fff;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #3f51b5;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #5c6bc0;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid #333;
+        }
+        
+        .btn-outline:hover {
+            background: #1e1e3a;
+            color: #fff;
+        }
+        
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.12);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+        
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.22);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.78em;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        /* ── Stats bar ── */
+        
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .stat-chip {
+            background: #12122a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .stat-chip .n {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #90caf9;
+        }
+        
+        .stat-chip .l {
+            font-size: 0.72em;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .stat-chip.mal .n {
+            color: #f44336;
+        }
+        
+        .stat-chip.sus .n {
+            color: #ff9800;
+        }
+        
+        .stat-chip.cln .n {
+            color: #4caf50;
+        }
+        /* ── Controls ── */
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            background: #12122a;
+            border: 1px solid #2a2a4a;
+            border-radius: 7px;
+            padding: 8px 14px;
+            color: #e0e0e0;
+            font-size: 0.88em;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3f51b5;
+        }
+        /* ── Filter tabs ── */
+        
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        
+        .tab {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #2a2a4a;
+            background: #12122a;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-weight: 600;
+            transition: all .2s;
+        }
+        
+        .tab:hover {
+            border-color: #3f51b5;
+            color: #90caf9;
+        }
+        
+        .tab.active {
+            background: #3f51b5;
+            border-color: #3f51b5;
+            color: #fff;
+        }
+        
+        .tab.mal.active {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .tab.sus.active {
+            background: #ff9800;
+            border-color: #ff9800;
+        }
+        
+        .tab.cln.active {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        /* ── Table ── */
+        
+        .table-wrap {
+            background: #12122a;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84em;
+        }
+        
+        thead {
+            background: #0d0d1a;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px 14px;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 1px solid #2a2a4a;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #1a1a2e;
+            vertical-align: middle;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover td {
+            background: #1a1a2e;
+        }
+        /* ── Badges ── */
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-size: 0.76em;
+            font-weight: 600;
+        }
+        
+        .badge.Malicious {
+            background: rgba(244, 67, 54, 0.18);
+            color: #f44336;
+        }
+        
+        .badge.Suspicious {
+            background: rgba(255, 152, 0, 0.18);
+            color: #ff9800;
+        }
+        
+        .badge.Clean {
+            background: rgba(76, 175, 80, 0.18);
+            color: #4caf50;
+        }
+        
+        .badge.file {
+            background: rgba(63, 81, 181, 0.18);
+            color: #90caf9;
+        }
+        
+        .badge.url {
+            background: rgba(0, 188, 212, 0.18);
+            color: #00bcd4;
+        }
+        
+        .badge.hash {
+            background: rgba(156, 39, 176, 0.18);
+            color: #ce93d8;
+        }
+        /* ── Score bar ── */
+        
+        .score-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .score-bar-bg {
+            background: #1a1a2e;
+            border-radius: 4px;
+            height: 6px;
+            width: 60px;
+            overflow: hidden;
+        }
+        
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .score-num {
+            font-size: 0.82em;
+            color: #aaa;
+            min-width: 24px;
+        }
+        /* ── Target cell ── */
+        
+        .target-cell {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #ddd;
+            font-family: monospace;
+            font-size: 0.82em;
+        }
+        /* ── Action buttons ── */
+        
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .btn-view {
+            background: rgba(63, 81, 181, 0.15);
+            color: #90caf9;
+            border: 1px solid #3f51b5;
+        }
+        
+        .btn-view:hover {
+            background: #3f51b5;
+            color: #fff;
+        }
+        
+        .btn-del {
+            background: rgba(244, 67, 54, 0.12);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+        
+        .btn-del:hover {
+            background: #f44336;
+            color: #fff;
+        }
+        /* ── Empty / loading ── */
+        
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #444;
+        }
+        
+        .empty .icon {
+            font-size: 2.5em;
+            margin-bottom: 12px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #555;
+        }
+        /* ── Pagination ── */
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #2a2a4a;
+            background: #12122a;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.82em;
+        }
+        
+        .page-btn:hover {
+            border-color: #3f51b5;
+            color: #90caf9;
+        }
+        
+        .page-btn.active {
+            background: #3f51b5;
+            border-color: #3f51b5;
+            color: #fff;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+        /* ── Toast ── */
+        
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #1e1e3a;
+            border: 1px solid #3f51b5;
+            color: #e0e0e0;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.88em;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="page-header">
+            <h1>🕒 Scan History</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="exportJSON()">📥 Export JSON</button>
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat-chip">
+                <div class="n" id="s-total">—</div>
+                <div class="l">Total Scans</div>
+            </div>
+            <div class="stat-chip mal">
+                <div class="n" id="s-mal">—</div>
+                <div class="l">Malicious</div>
+            </div>
+            <div class="stat-chip sus">
+                <div class="n" id="s-sus">—</div>
+                <div class="l">Suspicious</div>
+            </div>
+            <div class="stat-chip cln">
+                <div class="n" id="s-cln">—</div>
+                <div class="l">Clean</div>
+            </div>
+            <div class="stat-chip">
+                <div class="n" id="s-file">—</div>
+                <div class="l">File Scans</div>
+            </div>
+            <div class="stat-chip">
+                <div class="n" id="s-url">—</div>
+                <div class="l">URL Scans</div>
+            </div>
+            <div class="stat-chip">
+                <div class="n" id="s-hash">—</div>
+                <div class="l">Hash Scans</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <input class="search-box" id="search" placeholder="🔍 Search by target, filename, verdict..." oninput="applyFilters()">
+            <select class="search-box" style="flex:0;min-width:140px;" id="sort" onchange="applyFilters()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="score_high">Score: High→Low</option>
+            <option value="score_low">Score: Low→High</option>
+        </select>
+        </div>
+
+        <!-- Type + Verdict tabs -->
+        <div class="filter-tabs" id="type-tabs">
+            <span class="tab active" data-type="all" onclick="setType('all',this)">All</span>
+            <span class="tab" data-type="file" onclick="setType('file',this)">📄 File</span>
+            <span class="tab" data-type="url" onclick="setType('url',this)">🌐 URL</span>
+            <span class="tab" data-type="hash" onclick="setType('hash',this)">🔢 Hash</span>
+        </div>
+        <div class="filter-tabs" id="verdict-tabs">
+            <span class="tab active" data-v="all" onclick="setVerdict('all',this)">All Verdicts</span>
+            <span class="tab mal" data-v="Malicious" onclick="setVerdict('Malicious',this)">🚨 Malicious</span>
+            <span class="tab sus" data-v="Suspicious" onclick="setVerdict('Suspicious',this)">⚠️ Suspicious</span>
+            <span class="tab cln" data-v="Clean" onclick="setVerdict('Clean',this)">✅ Clean</span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Target / File</th>
+                        <th>Verdict</th>
+                        <th>Score</th>
+                        <th>Risk</th>
+                        <th>Scanned At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="8" class="loading">Loading history...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+
+    </div>
+    <div id="toast"></div>
+
+    <script>
+        const BASE = "http://127.0.0.1:5000";
+        const PER_PAGE = 15;
+
+        let allScans = [];
+        let filtered = [];
+        let currentPage = 1;
+        let activeType = "all";
+        let activeVerdict = "all";
+
+        // ── Auth helpers ──────────────────────────────────────────────────────────
+        function uid() {
+            return sessionStorage.getItem("uid") || "";
+        }
+
+        function authH(json) {
+            const h = {
+                "X-User-ID": uid()
+            };
+            if (json) h["Content-Type"] = "application/json";
+            return h;
+        }
+
+        // ── Toast ─────────────────────────────────────────────────────────────────
+        function toast(msg, color) {
+            color = color || "#3f51b5";
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.style.borderColor = color;
+            t.style.display = "block";
+            setTimeout(() => t.style.display = "none", 3000);
+        }
+
+        // ── Load history ──────────────────────────────────────────────────────────
+        async function loadHistory() {
+            const id = uid();
+            if (!id) {
+                document.getElementById("table-body").innerHTML =
+                    '<tr><td colspan="8" class="empty"><div class="icon">🔒</div>Please <a href="login.html" style="color:#90caf9;">login</a> first.</td></tr>';
+                return;
+            }
+
+            try {
+                const res = await fetch(BASE + "/api/scan/history/" + id, {
+                    headers: authH(false)
+                });
+                const data = await res.json();
+
+                // Handle both array response and {history:[]} response
+                allScans = Array.isArray(data) ? data : (data.history || data.scans || []);
+
+                updateStats();
+                applyFilters();
+            } catch (e) {
+                document.getElementById("table-body").innerHTML =
+                    '<tr><td colspan="8" class="empty"><div class="icon">❌</div>Failed to load. Is backend running?</td></tr>';
+            }
+        }
+
+        // ── Stats ─────────────────────────────────────────────────────────────────
+        function updateStats() {
+            const mal = allScans.filter(s => s.verdict === "Malicious").length;
+            const sus = allScans.filter(s => s.verdict === "Suspicious").length;
+            const cln = allScans.filter(s => s.verdict === "Clean").length;
+            const file = allScans.filter(s => s.scan_type === "file").length;
+            const url = allScans.filter(s => s.scan_type === "url").length;
+            const hash = allScans.filter(s => s.scan_type === "hash").length;
+
+            document.getElementById("s-total").textContent = allScans.length;
+            document.getElementById("s-mal").textContent = mal;
+            document.getElementById("s-sus").textContent = sus;
+            document.getElementById("s-cln").textContent = cln;
+            document.getElementById("s-file").textContent = file;
+            document.getElementById("s-url").textContent = url;
+            document.getElementById("s-hash").textContent = hash;
+        }
+
+        // ── Filters ───────────────────────────────────────────────────────────────
+        function setType(type, el) {
+            activeType = type;
+            document.querySelectorAll("#type-tabs .tab").forEach(t => t.classList.remove("active"));
+            el.classList.add("active");
+            currentPage = 1;
+            applyFilters();
+        }
+
+        function setVerdict(v, el) {
+            activeVerdict = v;
+            document.querySelectorAll("#verdict-tabs .tab").forEach(t => t.classList.remove("active"));
+            el.classList.add("active");
+            currentPage = 1;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const q = document.getElementById("search").value.toLowerCase().trim();
+            const sort = document.getElementById("sort").value;
+
+            filtered = allScans.filter(function(s) {
+                const matchType = activeType === "all" || s.scan_type === activeType;
+                const matchVerdict = activeVerdict === "all" || s.verdict === activeVerdict;
+                const target = (s.target || s.filename || "").toLowerCase();
+                const matchSearch = !q || target.includes(q) ||
+                    (s.verdict || "").toLowerCase().includes(q) ||
+                    (s.scan_type || "").toLowerCase().includes(q);
+                return matchType && matchVerdict && matchSearch;
+            });
+
+            // Sort
+            filtered.sort(function(a, b) {
+                if (sort === "newest") return new Date(b.scanned_at) - new Date(a.scanned_at);
+                if (sort === "oldest") return new Date(a.scanned_at) - new Date(b.scanned_at);
+                if (sort === "score_high") return (b.threat_score || 0) - (a.threat_score || 0);
+                if (sort === "score_low") return (a.threat_score || 0) - (b.threat_score || 0);
+                return 0;
+            });
+
+            renderTable();
+            renderPagination();
+        }
+
+        // ── Render table ──────────────────────────────────────────────────────────
+        function scoreColor(s) {
+            if (s >= 70) return "#f44336";
+            if (s >= 30) return "#ff9800";
+            return "#4caf50";
+        }
+
+        function ago(v) {
+            if (!v) return "—";
+            const d = new Date(v.replace(" ", "T"));
+            const diff = Math.floor((Date.now() - d) / 1000);
+            if (diff < 60) return "Just now";
+            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+            if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+            if (diff < 604800) return Math.floor(diff / 86400) + "d ago";
+            return d.toLocaleDateString();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("table-body");
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty"><div class="icon">🔍</div>No scans match your filters.</td></tr>';
+                return;
+            }
+
+            const start = (currentPage - 1) * PER_PAGE;
+            const page = filtered.slice(start, start + PER_PAGE);
+
+            tbody.innerHTML = page.map(function(s, i) {
+                const score = s.threat_score || 0;
+                const sColor = scoreColor(score);
+                const target = s.filename || s.target || "—";
+                const rowNum = start + i + 1;
+                const risk = s.risk_level || "—";
+
+                return '<tr>' +
+                    '<td style="color:#555;font-size:0.8em;">' + rowNum + '</td>' +
+                    '<td><span class="badge ' + s.scan_type + '">' + s.scan_type + '</span></td>' +
+                    '<td><div class="target-cell" title="' + target + '">' + target + '</div></td>' +
+                    '<td><span class="badge ' + s.verdict + '">' + (s.verdict || "—") + '</span></td>' +
+                    '<td>' +
+                    '<div class="score-wrap">' +
+                    '<div class="score-bar-bg"><div class="score-bar-fill" style="width:' + score + '%;background:' + sColor + ';"></div></div>' +
+                    '<span class="score-num" style="color:' + sColor + ';">' + score + '</span>' +
+                    '</div>' +
+                    '</td>' +
+                    '<td><span style="font-size:0.8em;color:' + sColor + ';">' + risk + '</span></td>' +
+                    '<td style="color:#666;font-size:0.82em;white-space:nowrap;">' + ago(s.scanned_at) + '</td>' +
+                    '<td>' +
+                    '<div class="action-btns">' +
+                    '<button class="btn-sm btn-view" onclick="viewScan(' + JSON.stringify(s).replace(/"/g, '&quot;') + ')">👁 View</button>' +
+                    '<button class="btn-sm btn-del"  onclick="deleteScan(' + s.id + ', this)">🗑</button>' +
+                    '</div>' +
+                    '</td>' +
+                    '</tr>';
+            }).join("");
+        }
+
+        // ── Pagination ────────────────────────────────────────────────────────────
+        function renderPagination() {
+            const total = Math.ceil(filtered.length / PER_PAGE);
+            const pg = document.getElementById("pagination");
+            if (total <= 1) {
+                pg.innerHTML = "";
+                return;
+            }
+
+            let html = "";
+            html += '<button class="page-btn" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? "disabled" : "") + '>← Prev</button>';
+            for (let i = 1; i <= total; i++) {
+                if (i === 1 || i === total || Math.abs(i - currentPage) <= 2) {
+                    html += '<button class="page-btn ' + (i === currentPage ? "active" : "") + '" onclick="goPage(' + i + ')">' + i + '</button>';
+                } else if (Math.abs(i - currentPage) === 3) {
+                    html += '<span style="color:#555;padding:6px;">…</span>';
+                }
+            }
+            html += '<button class="page-btn" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === total ? "disabled" : "") + '>Next →</button>';
+            pg.innerHTML = html;
+        }
+
+        function goPage(p) {
+            const total = Math.ceil(filtered.length / PER_PAGE);
+            if (p < 1 || p > total) return;
+            currentPage = p;
+            renderTable();
+            renderPagination();
+            window.scrollTo(0, 0);
+        }
+
+        // ── View scan ─────────────────────────────────────────────────────────────
+        function viewScan(s) {
+            // Store result_json back to sessionStorage and redirect to result page
+            try {
+                if (s.result_json) {
+                    const result = typeof s.result_json === "string" ?
+                        JSON.parse(s.result_json) : s.result_json;
+
+                    if (s.scan_type === "hash") {
+                        sessionStorage.setItem("hashScanResult", JSON.stringify(result));
+                        window.location.href = "hash_result.html";
+                    } else if (s.scan_type === "url") {
+                        sessionStorage.setItem("urlScanResult", JSON.stringify(result));
+                        window.location.href = "url_result.html";
+                    } else if (s.scan_type === "file") {
+                        sessionStorage.setItem("scanResult", JSON.stringify(result));
+                        window.location.href = "result.html";
+                    }
+                } else {
+                    toast("⚠️ Full result not available for this scan", "#ff9800");
+                }
+            } catch (e) {
+                toast("⚠️ Could not load result: " + e.message, "#f44336");
+            }
+        }
+
+        // ── Delete scan ───────────────────────────────────────────────────────────
+        async function deleteScan(id, btn) {
+            if (!confirm("Delete this scan from history?")) return;
+            btn.disabled = true;
+            btn.textContent = "...";
+
+            try {
+                const res = await fetch(BASE + "/api/scan/history/delete/" + id, {
+                    method: "DELETE",
+                    headers: authH(false)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    allScans = allScans.filter(function(s) {
+                        return s.id !== id;
+                    });
+                    updateStats();
+                    applyFilters();
+                    toast("🗑️ Scan deleted");
+                } else {
+                    toast("❌ Failed to delete", "#f44336");
+                    btn.disabled = false;
+                    btn.textContent = "🗑";
+                }
+            } catch (e) {
+                toast("❌ Error: " + e.message, "#f44336");
+                btn.disabled = false;
+                btn.textContent = "🗑";
+            }
+        }
+
+        // ── Export JSON ───────────────────────────────────────────────────────────
+        function exportJSON() {
+            if (filtered.length === 0) {
+                toast("⚠️ Nothing to export", "#ff9800");
+                return;
+            }
+            const blob = new Blob([JSON.stringify(filtered, null, 2)], {
+                type: "application/json"
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "threatlens_history_" + new Date().toISOString().split("T")[0] + ".json";
+            a.click();
+            URL.revokeObjectURL(url);
+            toast("✅ Exported " + filtered.length + " scan(s)");
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────────────
+        loadHistory();
+    </script>
+</body>
+
+</html>

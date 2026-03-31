@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — ThreatLens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0d0d1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5em;
+            color: #fff;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.88em;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #3f51b5;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #5c6bc0;
+        }
+        
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+        
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 0.25);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid #333;
+        }
+        
+        .btn-outline:hover {
+            background: #1e1e3a;
+            color: #fff;
+        }
+        
+        .identity-card {
+            background: #12122a;
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3f51b5, #7c4dff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        
+        .identity-info h2 {
+            font-size: 1.3em;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        
+        .identity-info p {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        
+        .role-badge.admin {
+            background: rgba(255, 152, 0, 0.15);
+            border: 1px solid #ff9800;
+            color: #ff9800;
+        }
+        
+        .role-badge.user {
+            background: rgba(63, 81, 181, 0.15);
+            border: 1px solid #3f51b5;
+            color: #90caf9;
+        }
+        
+        .member-since {
+            font-size: 0.78em;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        @media(max-width:700px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: #12122a;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .card-title {
+            font-size: 0.92em;
+            color: #90caf9;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e1e3a;
+        }
+        
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+        
+        .stat-box {
+            background: #0d0d1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-box .n {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #90caf9;
+        }
+        
+        .stat-box .l {
+            font-size: 0.72em;
+            color: #777;
+            margin-top: 3px;
+        }
+        
+        .stat-box.mal .n {
+            color: #f44336;
+        }
+        
+        .stat-box.sus .n {
+            color: #ff9800;
+        }
+        
+        .stat-box.cln .n {
+            color: #4caf50;
+        }
+        
+        .rate-bar-wrap {
+            margin-top: 14px;
+        }
+        
+        .rate-bar-wrap label {
+            font-size: 0.78em;
+            color: #888;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .rate-bar-bg {
+            background: #1a1a2e;
+            border-radius: 6px;
+            height: 10px;
+            overflow: hidden;
+        }
+        
+        .rate-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #3f51b5, #7c4dff);
+            transition: width 1s ease;
+        }
+        
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.83em;
+        }
+        
+        .tbl th {
+            text-align: left;
+            padding: 8px 10px;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 1px solid #2a2a4a;
+        }
+        
+        .tbl td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        
+        .tbl tr:hover td {
+            background: #1a1a2e;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.76em;
+            font-weight: 600;
+        }
+        
+        .badge.Malicious {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        .badge.Suspicious {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+        
+        .badge.Clean {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .badge.file {
+            background: rgba(63, 81, 181, 0.2);
+            color: #90caf9;
+        }
+        
+        .badge.url {
+            background: rgba(0, 188, 212, 0.2);
+            color: #00bcd4;
+        }
+        
+        .badge.hash {
+            background: rgba(156, 39, 176, 0.2);
+            color: #ce93d8;
+        }
+        
+        .trust-score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #7c4dff;
+            text-align: center;
+            margin: 8px 0;
+        }
+        
+        .trust-label {
+            font-size: 0.75em;
+            color: #888;
+            text-align: center;
+        }
+        
+        .api-key-box {
+            background: #0d0d1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: monospace;
+            font-size: 0.85em;
+            color: #90caf9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: 1px solid #3f51b5;
+            color: #90caf9;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.78em;
+        }
+        
+        .copy-btn:hover {
+            background: #3f51b5;
+        }
+        
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #1e1e3a;
+            border: 1px solid #3f51b5;
+            color: #e0e0e0;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.88em;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .no-data {
+            color: #444;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            color: #555;
+            text-align: center;
+            padding: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>👤 My Profile</h1>
+            <div class="header-actions">
+                <a href="settings.html" class="btn btn-primary">⚙️ Settings</a>
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+            </div>
+        </div>
+        <div id="content">
+            <p class="loading">Loading profile...</p>
+        </div>
+    </div>
+    <div id="toast"></div>
+
+    <script>
+        const BASE = "http://127.0.0.1:5000";
+
+        function authHeaders() {
+            return {
+                "X-User-ID": sessionStorage.getItem("uid") || ""
+            };
+        }
+
+        function toast(msg, color) {
+            color = color || "#3f51b5";
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.style.borderColor = color;
+            t.style.display = "block";
+            setTimeout(() => t.style.display = "none", 3000);
+        }
+
+        function fmt(v) {
+            return (v !== undefined && v !== null) ? v : "—";
+        }
+
+        function num(v) {
+            return (v !== undefined && v !== null) ? v : 0;
+        }
+
+        function date(v) {
+            return v ? v.split(" ")[0] : "—";
+        }
+
+        function ago(v) {
+            if (!v) return "Never";
+            const d = new Date(v.replace(" ", "T"));
+            const diff = Math.floor((Date.now() - d) / 1000);
+            if (diff < 60) return "Just now";
+            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+            if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+            return Math.floor(diff / 86400) + "d ago";
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => toast("Copied to clipboard!"));
+        }
+
+        async function loadProfile() {
+            const uid = sessionStorage.getItem("uid");
+            if (!uid) {
+                document.getElementById("content").innerHTML =
+                    '<p class="no-data">⚠️ Please <a href="login.html" style="color:#90caf9;">login</a> first.</p>';
+                return;
+            }
+
+            try {
+                const res = await fetch(BASE + "/profile/me", {
+                    headers: authHeaders()
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById("content").innerHTML = '<p class="no-data">⚠️ ' + data.error + '</p>';
+                    return;
+                }
+                render(data);
+            } catch (e) {
+                document.getElementById("content").innerHTML =
+                    '<p class="no-data">❌ Failed to load profile. Is backend running?</p>';
+            }
+        }
+
+        function render(d) {
+            const u = d.user || {};
+            const us = d.usage || {};
+            const an = d.analytics || {};
+            const rec = d.recent_activity || [];
+            const com = d.community || {};
+            const apiKey = d.api_key;
+
+            const initials = (u.name || "U").split(" ").map(function(x) {
+                return x[0];
+            }).join("").toUpperCase().slice(0, 2);
+            const rate = num(an.detection_rate);
+
+            const trustScore = Math.min(
+                Math.round(
+                    (num(com.malicious_reports) * 10 + num(com.suspicious_reports) * 5) /
+                    Math.max(num(com.total_contributions), 1) * 10
+                ), 100
+            ) || 0;
+
+            const recentRows = rec.length ? rec.map(function(r) {
+                return '<tr>' +
+                    '<td><span class="badge ' + r.scan_type + '">' + r.scan_type + '</span></td>' +
+                    '<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (r.target || r.filename || '') + '">' +
+                    (r.filename || r.target || "—").substring(0, 40) +
+                    '</td>' +
+                    '<td><span class="badge ' + r.verdict + '">' + r.verdict + '</span></td>' +
+                    '<td style="color:#aaa;">' + (r.threat_score !== null ? r.threat_score : "—") + '</td>' +
+                    '<td style="color:#666;font-size:0.85em;">' + ago(r.scanned_at) + '</td>' +
+                    '</tr>';
+            }).join("") : '<tr><td colspan="5" class="no-data">No scans yet</td></tr>';
+
+            const apiKeyHtml = apiKey ?
+                '<div class="api-key-box"><span>tl_••••••••' + apiKey.slice(-6) + '</span>' +
+                '<button class="copy-btn" onclick="copyText(\'' + apiKey + '\')">Copy</button></div>' :
+                '<p style="color:#555;font-size:0.85em;margin-bottom:10px;">No API key generated yet.</p>';
+
+            document.getElementById("content").innerHTML =
+
+                /* Identity */
+                '<div class="identity-card">' +
+                '<div class="avatar">' + initials + '</div>' +
+                '<div class="identity-info">' +
+                '<h2>' + fmt(u.name) + '</h2>' +
+                '<p>' + fmt(u.email) + '</p>' +
+                '<span class="role-badge ' + (u.role === "admin" ? "admin" : "user") + '">' +
+                (u.role === "admin" ? "🛡️ Admin" : "👤 Free User") +
+                '</span>' +
+                '<p class="member-since">Member since ' + date(u.member_since) + '</p>' +
+                '</div>' +
+                '</div>' +
+
+                /* Usage + Analytics */
+                '<div class="grid-2">' +
+                '<div class="card">' +
+                '<div class="card-title">📊 Usage Summary</div>' +
+                '<div class="stat-row">' +
+                '<div class="stat-box"><div class="n">' + num(us.total_scans) + '</div><div class="l">Total Scans</div></div>' +
+                '<div class="stat-box"><div class="n">' + num(us.file_scans) + '</div><div class="l">File Scans</div></div>' +
+                '<div class="stat-box"><div class="n">' + num(us.url_scans) + '</div><div class="l">URL Scans</div></div>' +
+                '<div class="stat-box"><div class="n">' + num(us.hash_scans) + '</div><div class="l">Hash Scans</div></div>' +
+                '</div>' +
+                '<p style="font-size:0.78em;color:#666;margin-top:14px;">Last scan: ' + ago(us.last_scan) + '</p>' +
+                '</div>' +
+                '<div class="card">' +
+                '<div class="card-title">🎯 Threat Analytics</div>' +
+                '<div class="stat-row">' +
+                '<div class="stat-box mal"><div class="n">' + num(an.malicious) + '</div><div class="l">Malicious</div></div>' +
+                '<div class="stat-box sus"><div class="n">' + num(an.suspicious) + '</div><div class="l">Suspicious</div></div>' +
+                '<div class="stat-box cln"><div class="n">' + num(an.clean) + '</div><div class="l">Clean</div></div>' +
+                '<div class="stat-box"><div class="n">' + num(an.avg_score) + '</div><div class="l">Avg Score</div></div>' +
+                '</div>' +
+                '<div class="rate-bar-wrap">' +
+                '<label>Detection Rate: ' + rate + '%</label>' +
+                '<div class="rate-bar-bg"><div class="rate-bar-fill" style="width:' + rate + '%"></div></div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+
+                /* Recent Activity */
+                '<div class="card">' +
+                '<div class="card-title">🕒 Recent Activity</div>' +
+                '<div style="overflow-x:auto;">' +
+                '<table class="tbl">' +
+                '<thead><tr><th>Type</th><th>Target</th><th>Verdict</th><th>Score</th><th>When</th></tr></thead>' +
+                '<tbody>' + recentRows + '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+
+                /* Community + API */
+                '<div class="grid-2">' +
+                '<div class="card">' +
+                '<div class="card-title">🌐 Community Contribution</div>' +
+                '<div class="stat-row" style="margin-bottom:16px;">' +
+                '<div class="stat-box mal"><div class="n">' + num(com.malicious_reports) + '</div><div class="l">Malicious Reports</div></div>' +
+                '<div class="stat-box sus"><div class="n">' + num(com.suspicious_reports) + '</div><div class="l">Suspicious Reports</div></div>' +
+                '<div class="stat-box"><div class="n">' + num(com.total_contributions) + '</div><div class="l">Total Contributions</div></div>' +
+                '</div>' +
+                '<div class="trust-score">' + trustScore + '</div>' +
+                '<div class="trust-label">Community Trust Score</div>' +
+                '</div>' +
+                '<div class="card">' +
+                '<div class="card-title">🔑 API Access</div>' +
+                apiKeyHtml +
+                '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">' +
+                '<button class="btn btn-primary" onclick="generateApiKey()" style="flex:1;">Generate Key</button>' +
+                '<button class="btn btn-danger"  onclick="revokeApiKey()"   style="flex:1;">Revoke Key</button>' +
+                '</div>' +
+                '<p style="font-size:0.75em;color:#555;margin-top:10px;">Use this key to access ThreatLens API.</p>' +
+                '</div>' +
+                '</div>' +
+
+                /* Role */
+                '<div class="card">' +
+                '<div class="card-title">🛡️ Role & Permissions</div>' +
+                '<div class="stat-row">' +
+                '<div class="stat-box"><div class="n" style="font-size:1.1em;">' + (u.role === "admin" ? "🛡️" : "👤") + '</div><div class="l">Role: ' + (u.role || "user") + '</div></div>' +
+                '<div class="stat-box"><div class="n" style="font-size:1.1em;">✅</div><div class="l">Scan Access</div></div>' +
+                '<div class="stat-box"><div class="n" style="font-size:1.1em;">' + (u.role === "admin" ? "✅" : "🔒") + '</div><div class="l">Admin Panel</div></div>' +
+                '<div class="stat-box"><div class="n" style="font-size:1.1em;">✅</div><div class="l">Community DB</div></div>' +
+                '</div>' +
+                '</div>';
+        }
+
+        async function generateApiKey() {
+            const res = await fetch(BASE + "/profile/api-key/generate", {
+                method: "POST",
+                headers: authHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast("✅ API key generated!");
+                loadProfile();
+            } else toast("❌ Failed: " + data.error, "#f44336");
+        }
+
+        async function revokeApiKey() {
+            if (!confirm("Revoke your API key? This cannot be undone.")) return;
+            const res = await fetch(BASE + "/profile/api-key/revoke", {
+                method: "POST",
+                headers: authHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast("🗑️ API key revoked.");
+                loadProfile();
+            } else toast("❌ Failed: " + data.error, "#f44336");
+        }
+
+        loadProfile();
+    </script>
+</body>
+
+</html>

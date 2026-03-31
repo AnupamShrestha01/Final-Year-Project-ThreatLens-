@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens — Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        if (!sessionStorage.getItem("uid")) window.location.href = "login.html";
+        var _t = localStorage.getItem("theme");
+        if (_t) document.documentElement.setAttribute("data-theme", _t);
+    </script>
+    <style>
+        /* ── Layout ── */
+        
+        .db-content {
+            padding: 28px 32px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        /* ── Welcome bar ── */
+        
+        .welcome-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .welcome-bar h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .welcome-bar p {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 3px;
+        }
+        
+        .scan-now-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.15s;
+        }
+        
+        .scan-now-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        /* ── Stat Cards ── */
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        
+        @media (max-width: 1200px) {
+            .stat-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        body.light .stat-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+        }
+        
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 14px 14px 0 0;
+            background: #2563eb;
+        }
+        
+        .stat-card.s-mal::after {
+            background: #ef4444;
+        }
+        
+        .stat-card.s-sus::after {
+            background: #f97316;
+        }
+        
+        .stat-card.s-clean::after {
+            background: #22c55e;
+        }
+        
+        .stat-card.s-rate::after {
+            background: #a855f7;
+        }
+        
+        .stat-card.s-avg::after {
+            background: #eab308;
+        }
+        
+        .stat-icon {
+            font-size: 1.7rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 6px;
+            color: #e5e7eb;
+        }
+        
+        body.light .stat-val {
+            color: #111827;
+        }
+        
+        .stat-card.s-mal .stat-val {
+            color: #ef4444;
+        }
+        
+        .stat-card.s-sus .stat-val {
+            color: #f97316;
+        }
+        
+        .stat-card.s-clean .stat-val {
+            color: #22c55e;
+        }
+        
+        .stat-card.s-rate .stat-val {
+            color: #a855f7;
+        }
+        
+        .stat-card.s-avg .stat-val {
+            color: #eab308;
+        }
+        
+        .stat-lbl {
+            font-size: 0.72rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        /* ── Charts row ── */
+        
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        
+        @media (max-width: 800px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 22px;
+        }
+        
+        body.light .chart-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        
+        .chart-card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 18px;
+        }
+        
+        body.light .chart-card h3 {
+            color: #6b7280;
+        }
+        
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+        }
+        /* ── Recent Scans ── */
+        
+        .recent-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 28px;
+        }
+        
+        body.light .recent-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        
+        .recent-hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .recent-hdr h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        
+        body.light .recent-hdr h3 {
+            color: #6b7280;
+        }
+        
+        .view-all {
+            font-size: 0.82rem;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        /* Table */
+        
+        .recent-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .recent-table th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4b5563;
+            padding: 0 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        body.light .recent-table th {
+            color: #9ca3af;
+            border-color: #e5e7eb;
+        }
+        
+        .recent-table td {
+            padding: 11px 12px;
+            font-size: 0.84rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #d1d5db;
+        }
+        
+        body.light .recent-table td {
+            color: #374151;
+            border-color: #f3f4f6;
+        }
+        
+        .recent-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .recent-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        body.light .recent-table tr:hover td {
+            background: #f9fafb;
+        }
+        
+        .type-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+        
+        .verdict-chip {
+            display: inline-block;
+            padding: 3px 11px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .vc-Malicious {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .vc-Suspicious {
+            background: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+        }
+        
+        .vc-Clean {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+        
+        .score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .score-bar-bg {
+            flex: 1;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        body.light .score-bar-bg {
+            background: #e5e7eb;
+        }
+        
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        
+        .score-num {
+            font-size: 0.78rem;
+            color: #6b7280;
+            min-width: 26px;
+            text-align: right;
+        }
+        
+        .target-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        /* ── Empty state ── */
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #4b5563;
+        }
+        
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        
+        .empty-state p {
+            font-size: 0.88rem;
+        }
+        /* ── Loading skeleton ── */
+        
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 6px;
+            height: 2.2rem;
+            width: 60%;
+            margin: 0 auto 6px;
+        }
+        
+        body.light .skeleton {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+        }
+        
+        @keyframes shimmer {
+            to {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="dark">
+    <script>
+        var _saved = localStorage.getItem("theme");
+        if (_saved) document.body.className = _saved;
+    </script>
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="header">
+        <div class="brand">
+            <img src="../assets/logo.png" class="logo" alt="ThreatLens">
+            <div class="brand-text">
+                <h1>ThreatLens</h1>
+                <span>One lens. Total threat visibility.</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" title="Toggle Theme">☀️</button>
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <!-- ═══════════ SIDEBAR ═══════════ -->
+        <aside class="sidebar">
+            <div class="profile">
+                <div class="avatar">👤</div>
+                <p id="username">User</p>
+            </div>
+            <nav>
+                <a href="dashboard.html" style="background:rgba(37,99,235,0.25);color:#60a5fa;border-left:3px solid #2563eb;padding-left:17px">Dashboard</a>
+                <a href="index.html">Scan</a>
+                <a href="history.html">Scan History</a>
+                <a href="reports.html">Reports</a>
+                <a href="profile.html">Profile</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- ═══════════ MAIN CONTENT ═══════════ -->
+        <main class="db-content">
+
+            <!-- Welcome bar -->
+            <div class="welcome-bar">
+                <div>
+                    <h2>👋 Welcome back, <span id="welcomeName">User</span></h2>
+                    <p id="lastScanText">Loading your scan statistics...</p>
+                </div>
+                <a href="index.html" class="scan-now-btn">🔍 New Scan</a>
+            </div>
+
+            <!-- ═══ STAT CARDS ═══ -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-val" id="sTotal">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Total Scans</div>
+                </div>
+                <div class="stat-card s-mal">
+                    <div class="stat-icon">☠️</div>
+                    <div class="stat-val" id="sMal">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Malicious</div>
+                </div>
+                <div class="stat-card s-sus">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-val" id="sSus">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Suspicious</div>
+                </div>
+                <div class="stat-card s-clean">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-val" id="sClean">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Clean</div>
+                </div>
+                <div class="stat-card s-rate">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-val" id="sRate">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Detection Rate</div>
+                </div>
+                <div class="stat-card s-avg">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-val" id="sAvg">
+                        <div class="skeleton"></div>
+                    </div>
+                    <div class="stat-lbl">Avg Threat Score</div>
+                </div>
+            </div>
+
+            <!-- ═══ CHARTS ═══ -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3>🧩 Verdict Breakdown</h3>
+                    <div class="chart-wrap">
+                        <canvas id="verdictChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>📂 Scan Type Breakdown</h3>
+                    <div class="chart-wrap">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ RECENT SCANS TABLE ═══ -->
+            <div class="recent-card">
+                <div class="recent-hdr">
+                    <h3>🕐 Recent Scans</h3>
+                    <a href="history.html" class="view-all">View Full History →</a>
+                </div>
+                <div id="recentWrap">
+                    <!-- populated by JS -->
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <p>Loading recent scans...</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ═══════════ SCRIPTS ═══════════ -->
+    <script>
+        var API = "http://127.0.0.1:5000";
+
+        /* ── Auth & UI ── */
+        var uname = sessionStorage.getItem("userName") || "User";
+        document.getElementById("username").textContent = uname;
+        document.getElementById("welcomeName").textContent = uname;
+
+        document.getElementById("logoutBtn").onclick = function() {
+            sessionStorage.clear();
+            location.href = "login.html";
+        };
+
+        var themeBtn = document.getElementById("themeToggle");
+        var saved = localStorage.getItem("theme") || "dark";
+        document.body.className = saved;
+        themeBtn.textContent = saved === "dark" ? "☀️" : "🌙";
+        themeBtn.onclick = function() {
+            var dark = document.body.classList.contains("dark");
+            document.body.className = dark ? "light" : "dark";
+            themeBtn.textContent = dark ? "🌙" : "☀️";
+            localStorage.setItem("theme", dark ? "light" : "dark");
+            // Redraw charts on theme change
+            if (window._verdictChart) {
+                window._verdictChart.destroy();
+                window._verdictChart = null;
+            }
+            if (window._typeChart) {
+                window._typeChart.destroy();
+                window._typeChart = null;
+            }
+            if (window._lastStats) drawCharts(window._lastStats);
+        };
+
+        /* ── Animate number ── */
+        function animNum(id, target, suffix) {
+            suffix = suffix || "";
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = ""; // clear skeleton
+            var cur = 0,
+                step = Math.ceil(target / 40) || 1;
+            var t = setInterval(function() {
+                cur += step;
+                if (cur >= target) {
+                    cur = target;
+                    clearInterval(t);
+                }
+                el.textContent = cur + suffix;
+            }, 20);
+        }
+
+        /* ── Score bar colour ── */
+        function scoreColor(s) {
+            return s >= 70 ? "#ef4444" : s >= 40 ? "#f97316" : "#22c55e";
+        }
+
+        /* ── Load stats from API ── */
+        function loadStats() {
+            var uid = sessionStorage.getItem("uid");
+            if (!uid) return;
+
+            fetch(API + "/api/scan/stats/" + uid)
+                .then(function(r) {
+                    return r.json();
+                })
+                .then(function(d) {
+                    if (!d.success) throw new Error("failed");
+                    window._lastStats = d;
+
+                    // Stat cards
+                    animNum("sTotal", d.total || 0);
+                    animNum("sMal", d.malicious || 0);
+                    animNum("sSus", d.suspicious || 0);
+                    animNum("sClean", d.clean || 0);
+                    animNum("sRate", d.detection_rate || 0, "%");
+
+                    var avgEl = document.getElementById("sAvg");
+                    if (avgEl) {
+                        avgEl.innerHTML = "";
+                        avgEl.textContent = (d.avg_score || 0);
+                    }
+
+                    // Last scan text
+                    var ls = d.last_scan ? d.last_scan.replace("T", " ").split(".")[0] : null;
+                    document.getElementById("lastScanText").textContent =
+                        ls ? "Last scan: " + ls : "No scans yet — run your first scan!";
+
+                    drawCharts(d);
+                    renderRecentTable(d.recent || []);
+                })
+                .catch(function() {
+                    ["sTotal", "sMal", "sSus", "sClean", "sRate", "sAvg"].forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el) el.textContent = "0";
+                    });
+                    document.getElementById("lastScanText").textContent = "No scan data yet.";
+                    renderRecentTable([]);
+                });
+        }
+
+        /* ── Charts ── */
+        function chartDefaults() {
+            var dark = document.body.classList.contains("dark");
+            return {
+                textColor: dark ? "#9ca3af" : "#6b7280",
+                gridColor: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                legendColor: dark ? "#d1d5db" : "#374151",
+            };
+        }
+
+        function drawCharts(d) {
+            var cd = chartDefaults();
+
+            /* Verdict doughnut */
+            var vCtx = document.getElementById("verdictChart").getContext("2d");
+            if (window._verdictChart) window._verdictChart.destroy();
+            window._verdictChart = new Chart(vCtx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Malicious", "Suspicious", "Clean"],
+                    datasets: [{
+                        data: [d.malicious || 0, d.suspicious || 0, d.clean || 0],
+                        backgroundColor: ["#ef4444", "#f97316", "#22c55e"],
+                        borderColor: ["#ef444466", "#f9731666", "#22c55e66"],
+                        borderWidth: 2,
+                        hoverOffset: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "68%",
+                    plugins: {
+                        legend: {
+                            position: "right",
+                            labels: {
+                                color: cd.legendColor,
+                                font: {
+                                    size: 12
+                                },
+                                padding: 16,
+                                boxWidth: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var total = ctx.dataset.data.reduce(function(a, b) {
+                                        return a + b;
+                                    }, 0);
+                                    var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                                    return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            /* Scan type bar */
+            var tCtx = document.getElementById("typeChart").getContext("2d");
+            if (window._typeChart) window._typeChart.destroy();
+            window._typeChart = new Chart(tCtx, {
+                type: "bar",
+                data: {
+                    labels: ["📄 File Scans", "🌐 URL Scans", "🔑 Hash Scans"],
+                    datasets: [{
+                        label: "Scans",
+                        data: [d.file_scans || 0, d.url_scans || 0, d.hash_scans || 0],
+                        backgroundColor: ["rgba(96,165,250,0.7)", "rgba(167,139,250,0.7)", "rgba(52,211,153,0.7)"],
+                        borderColor: ["#60a5fa", "#a78bfa", "#34d399"],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    return " " + ctx.parsed.y + " scans";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: cd.textColor,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: cd.textColor,
+                                font: {
+                                    size: 11
+                                },
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: cd.gridColor
+                            },
+                            border: {
+                                display: false
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ── Recent scans table ── */
+        function renderRecentTable(rows) {
+            var wrap = document.getElementById("recentWrap");
+            if (!rows || !rows.length) {
+                wrap.innerHTML = "<div class='empty-state'><div class='empty-icon'>🔬</div>" +
+                    "<p>No scans yet. <a href='index.html' style='color:#60a5fa'>Run your first scan →</a></p></div>";
+                return;
+            }
+
+            var html = "<table class='recent-table'>" +
+                "<thead><tr>" +
+                "<th>#</th>" +
+                "<th>Type</th>" +
+                "<th>Target</th>" +
+                "<th>Verdict</th>" +
+                "<th>Threat Score</th>" +
+                "<th>Date</th>" +
+                "</tr></thead><tbody>";
+
+            rows.forEach(function(r, i) {
+                var target = r.filename || r.target || "—";
+                var tShort = target.length > 38 ? target.substring(0, 38) + "…" : target;
+                var date = r.scanned_at ? r.scanned_at.replace("T", " ").split(".")[0] : "—";
+                var verdict = r.verdict || "Clean";
+                var score = r.threat_score || 0;
+                var sColor = scoreColor(score);
+                var typeIcon = r.scan_type === "file" ? "📄 File" :
+                    r.scan_type === "url" ? "🌐 URL" :
+                    "🔑 Hash";
+
+                html += "<tr>" +
+                    "<td style='color:#4b5563;font-size:0.78rem'>" + (i + 1) + "</td>" +
+                    "<td><span class='type-chip'>" + typeIcon + "</span></td>" +
+                    "<td class='target-cell' title='" + esc(target) + "'>" + esc(tShort) + "</td>" +
+                    "<td><span class='verdict-chip vc-" + esc(verdict) + "'>" + esc(verdict) + "</span></td>" +
+                    "<td><div class='score-bar-wrap'>" +
+                    "<div class='score-bar-bg'><div class='score-bar-fill' style='width:" + score + "%;background:" + sColor + "'></div></div>" +
+                    "<span class='score-num' style='color:" + sColor + "'>" + score + "</span>" +
+                    "</div></td>" +
+                    "<td style='color:#6b7280;font-size:0.8rem'>" + esc(date) + "</td>" +
+                    "</tr>";
+            });
+
+            html += "</tbody></table>";
+            wrap.innerHTML = html;
+        }
+
+        function esc(s) {
+            return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        /* ── Boot ── */
+        loadStats();
+    </script>
+
+</body>
+
+</html>

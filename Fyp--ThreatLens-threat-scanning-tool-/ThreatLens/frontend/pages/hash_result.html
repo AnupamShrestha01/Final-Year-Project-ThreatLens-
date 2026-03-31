@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens — Hash Scan Result</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/report_generator.js"></script>
+    <script>
+        if (!sessionStorage.getItem("uid")) window.location.href = "login.html";
+        // FIX: wrap in DOMContentLoaded so body exists before accessing it
+        document.addEventListener("DOMContentLoaded", function() {
+            var _t = localStorage.getItem("theme");
+            if (_t) document.body.className = _t;
+        });
+    </script>
+    <style>
+        .result-page {
+            padding: 28px 32px;
+            flex: 1;
+        }
+        
+        .verdict-banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #111827;
+            border-radius: 14px;
+            border-left: 5px solid #888;
+            padding: 22px 28px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        body.light .verdict-banner {
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+        }
+        
+        .verdict-icon {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        
+        .verdict-info {
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .verdict-info h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        
+        .verdict-info p {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+        
+        .threat-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1.5px solid;
+            margin-top: 8px;
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes pop {
+            from {
+                transform: scale(0.7);
+                opacity: 0
+            }
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+        
+        .tb-mal {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        
+        .tb-sus {
+            background: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+            border-color: rgba(249, 115, 22, 0.4);
+        }
+        
+        .tb-clean {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .threat-meter {
+            text-align: center;
+            min-width: 110px;
+        }
+        
+        .threat-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        
+        .threat-score {
+            font-size: 2.4rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        
+        .threat-bar-wrap {
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        
+        body.light .threat-bar-wrap {
+            background: #e5e7eb;
+        }
+        
+        .threat-bar {
+            height: 100%;
+            border-radius: 4px;
+            width: 0;
+            transition: width 0.8s ease;
+        }
+        
+        .hash-info-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        
+        body.light .hash-info-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .hash-info-card h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+        }
+        
+        .hash-val {
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.82rem;
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.08);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            word-break: break-all;
+            margin-bottom: 14px;
+        }
+        
+        body.light .hash-val {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        
+        .meta-row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .meta-item .lbl {
+            font-size: 0.72rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .meta-item .val {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #d1d5db;
+        }
+        
+        body.light .meta-item .val {
+            color: #374151;
+        }
+        
+        .engines-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        
+        body.light .engines-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .engines-card h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+        }
+        
+        .engines-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        
+        @media(max-width:700px) {
+            .engines-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .engine-chip {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        body.light .engine-chip {
+            border-color: #e5e7eb;
+        }
+        
+        .engine-name {
+            font-size: 0.72rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        
+        .engine-verdict {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        
+        .engine-chip small {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .detail-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        
+        body.light .detail-card {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-card-hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .detail-card-hdr h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #d1d5db;
+        }
+        
+        body.light .detail-card-hdr h3 {
+            color: #111827;
+        }
+        
+        .engine-badge {
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #9ca3af;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .info-table td {
+            padding: 9px 12px;
+            font-size: 0.84rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        
+        body.light .info-table td {
+            border-color: #f3f4f6;
+        }
+        
+        .info-table td:first-child {
+            color: #6b7280;
+            width: 160px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        
+        .info-table td:last-child {
+            color: #d1d5db;
+            font-weight: 500;
+        }
+        
+        body.light .info-table td:last-child {
+            color: #374151;
+        }
+        
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .vt-filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        
+        .vt-filter-btn {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: #9ca3af;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .vt-filter-btn.active,
+        .vt-filter-btn:hover {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        
+        .vt-stats {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        
+        .vt-stat {
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .vt-stat.malicious {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+        
+        .vt-stat.suspicious {
+            background: rgba(249, 115, 22, 0.12);
+            color: #f97316;
+        }
+        
+        .vt-stat.undetected {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        
+        .vt-stat.total {
+            background: rgba(255, 255, 255, 0.06);
+            color: #9ca3af;
+        }
+        
+        .vendor-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .vendor-table th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4b5563;
+            padding: 0 10px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        body.light .vendor-table th {
+            border-color: #e5e7eb;
+            color: #9ca3af;
+        }
+        
+        .vendor-table td {
+            padding: 9px 10px;
+            font-size: 0.83rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #d1d5db;
+        }
+        
+        body.light .vendor-table td {
+            color: #374151;
+            border-color: #f3f4f6;
+        }
+        
+        .vt-row-malicious td {
+            background: rgba(239, 68, 68, 0.04);
+        }
+        
+        .vt-row-suspicious td {
+            background: rgba(249, 115, 22, 0.04);
+        }
+        
+        .vendor-name {
+            font-weight: 600;
+        }
+        
+        .tag-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #9ca3af;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        body.light .tag {
+            background: #f3f4f6;
+            border-color: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .flag-item {
+            border-left: 3px solid #f97316;
+            padding: 8px 14px;
+            margin-bottom: 8px;
+            background: rgba(249, 115, 22, 0.05);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.84rem;
+            color: #d1d5db;
+        }
+        
+        body.light .flag-item {
+            color: #374151;
+            background: rgba(249, 115, 22, 0.04);
+        }
+        
+        .pulse-row {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        
+        body.light .pulse-row {
+            border-color: #f3f4f6;
+        }
+        
+        .pulse-row:last-child {
+            border-bottom: none;
+        }
+        
+        .pulse-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #d1d5db;
+            margin-bottom: 4px;
+        }
+        
+        body.light .pulse-name {
+            color: #374151;
+        }
+        
+        .pulse-meta {
+            font-size: 0.77rem;
+            color: #6b7280;
+        }
+        
+        .actions-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            color: #d1d5db;
+        }
+        
+        body.light .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .clean-banner {
+            text-align: center;
+            padding: 32px;
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        
+        .clean-banner .big-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .clean-banner p {
+            color: #9ca3af;
+            font-size: 0.88rem;
+            margin-top: 6px;
+        }
+        /* ── Chatbot ── */
+        
+        #tlChatBubble {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 9999;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        #tlChatBubble:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 28px rgba(37, 99, 235, 0.65);
+        }
+        
+        #tlChatBubble .tl-notif {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 14px;
+            height: 14px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: none;
+        }
+        
+        body.light #tlChatBubble .tl-notif {
+            border-color: #fff;
+        }
+        
+        #tlChatWindow {
+            position: fixed;
+            bottom: 96px;
+            right: 28px;
+            width: 360px;
+            max-height: 520px;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 9998;
+            overflow: hidden;
+            transform: scale(0.92) translateY(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.18s ease;
+        }
+        
+        #tlChatWindow.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        body.light #tlChatWindow {
+            background: #fff;
+            border-color: #e5e7eb;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        @media(max-width:480px) {
+            #tlChatWindow {
+                width: calc(100vw - 24px);
+                right: 12px;
+                bottom: 84px;
+            }
+        }
+        
+        #tlChatHeader {
+            background: linear-gradient(135deg, #1e3a8a, #4c1d95);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .tl-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        
+        .tl-hdr-info {
+            flex: 1;
+        }
+        
+        .tl-hdr-info strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        .tl-hdr-info span {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        #tlChatClose {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        
+        #tlChatClose:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #tlChatMessages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+        
+        #tlChatMessages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #tlChatMessages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .tl-msg {
+            max-width: 88%;
+            font-size: 0.84rem;
+            line-height: 1.55;
+            padding: 10px 13px;
+            border-radius: 14px;
+            word-wrap: break-word;
+            animation: tlMsgIn 0.2s ease;
+        }
+        
+        @keyframes tlMsgIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+        
+        .tl-msg.bot {
+            background: rgba(255, 255, 255, 0.06);
+            color: #d1d5db;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        
+        body.light .tl-msg.bot {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .tl-msg.user {
+            background: #2563eb;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        
+        .tl-typing {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            width: fit-content;
+        }
+        
+        body.light .tl-typing {
+            background: #f3f4f6;
+        }
+        
+        .tl-dot {
+            width: 7px;
+            height: 7px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: tlBounce 1.2s infinite;
+        }
+        
+        .tl-dot:nth-child(2) {
+            animation-delay: 0.2s
+        }
+        
+        .tl-dot:nth-child(3) {
+            animation-delay: 0.4s
+        }
+        
+        @keyframes tlBounce {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0)
+            }
+            30% {
+                transform: translateY(-6px)
+            }
+        }
+        
+        .tl-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px 10px;
+            flex-shrink: 0;
+        }
+        
+        .tl-suggestion {
+            font-size: 0.75rem;
+            padding: 5px 11px;
+            border-radius: 20px;
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            background: rgba(37, 99, 235, 0.08);
+            color: #60a5fa;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        
+        .tl-suggestion:hover {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+        }
+        
+        #tlChatInputRow {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+        
+        body.light #tlChatInputRow {
+            border-color: #e5e7eb;
+        }
+        
+        #tlChatInput {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.84rem;
+            color: #d1d5db;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            max-height: 80px;
+            transition: border-color 0.15s;
+        }
+        
+        body.light #tlChatInput {
+            background: #f9fafb;
+            border-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        #tlChatInput:focus {
+            border-color: #2563eb;
+        }
+        
+        #tlChatInput::placeholder {
+            color: #6b7280;
+        }
+        
+        #tlChatSend {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #2563eb;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            flex-shrink: 0;
+            align-self: flex-end;
+        }
+        
+        #tlChatSend:hover {
+            background: #1d4ed8;
+        }
+        
+        #tlChatSend:disabled {
+            background: #374151;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body class="dark">
+    <script>
+        var _s = localStorage.getItem("theme");
+        if (_s) document.body.className = _s;
+    </script>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="brand">
+            <img src="../assets/logo.png" class="logo" alt="ThreatLens">
+            <div class="brand-text">
+                <h1>ThreatLens</h1>
+                <span>One lens. Total threat visibility.</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" title="Toggle Theme">☀️</button>
+            <button id="logoutBtn">Logout</button>
+            <button onclick="generateScanReport('hash')" style="background:#3f51b5;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;">
+    📄 Generate PDF Report
+</button>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar">
+            <div class="profile">
+                <div class="avatar">👤</div>
+                <p id="username">User</p>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="index.html">Scan</a>
+                <a href="history.html">Scan History</a>
+                <a href="reports.html">Reports</a>
+                <a href="profile.html">Profile</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- ═══ CONTENT ═══ -->
+        <main class="result-page">
+
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+                <span style="font-size:0.75rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em">Hash</span>
+                <code id="hashDisplay" style="font-size:0.82rem;color:#60a5fa;background:rgba(96,165,250,0.08);padding:5px 12px;border-radius:8px;word-break:break-all">—</code>
+                <span id="hashTypePill" style="font-size:0.72rem;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.07);color:#9ca3af">—</span>
+            </div>
+
+            <!-- ═══ VERDICT BANNER ═══ -->
+            <div id="verdictBanner" class="verdict-banner">
+                <div class="verdict-icon" id="verdictIcon">🔍</div>
+                <div class="verdict-info">
+                    <h2 id="verdictText" style="color:#e5e7eb">Analyzing...</h2>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+                        <p id="verdictSub" style="margin:0;color:#9ca3af">—</p>
+                        <span id="threatTypeBadge" style="display:none"></span>
+                    </div>
+                </div>
+                <div class="threat-meter">
+                    <div class="threat-label">Threat Score</div>
+                    <div class="threat-score" id="threatScore" style="color:#e5e7eb">0</div>
+                    <div class="threat-bar-wrap">
+                        <div class="threat-bar" id="threatBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ENGINE CHIPS ═══ -->
+            <div class="engines-card">
+                <h3>🔬 Scan Engines</h3>
+                <div class="engines-grid" id="enginesGrid"></div>
+            </div>
+
+            <!-- ═══ LOCAL DB CARD ═══ -->
+            <div class="detail-card" id="localDbCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>🗄️ Local Malware Database</h3>
+                    <span class="engine-badge" id="localDbBadge">MalwareBazaar · 1M+ Hashes</span>
+                </div>
+                <div id="localDbDetails"></div>
+            </div>
+
+            <!-- ═══ VIRUSTOTAL CARD ═══ -->
+            <div class="detail-card" id="vtCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>🛡️ VirusTotal — File Analysis</h3>
+                    <span class="engine-badge">95 Security Vendors</span>
+                </div>
+                <div class="vt-stats" id="vtStats"></div>
+                <div class="vt-filter-row">
+                    <button class="vt-filter-btn active" onclick="filterVT('all',this)">All</button>
+                    <button class="vt-filter-btn" onclick="filterVT('malicious',this)">🔴 Malicious</button>
+                    <button class="vt-filter-btn" onclick="filterVT('suspicious',this)">🟠 Suspicious</button>
+                    <button class="vt-filter-btn" onclick="filterVT('undetected',this)">🟢 Clean</button>
+                </div>
+                <table class="vendor-table">
+                    <thead>
+                        <tr>
+                            <th>Security Vendor</th>
+                            <th>Category</th>
+                            <th>Detection</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vtTableBody"></tbody>
+                </table>
+                <div id="vtTags" class="tag-list" style="margin-top:14px"></div>
+            </div>
+
+            <!-- ═══ OTX CARD ═══ -->
+            <div class="detail-card" id="otxCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>📡 AlienVault OTX</h3>
+                    <span class="engine-badge">Threat Intelligence</span>
+                </div>
+                <div id="otxStats" class="vt-stats"></div>
+                <div id="otxMeta"></div>
+                <div id="otxPulses" style="margin-top:12px"></div>
+            </div>
+
+            <!-- ═══ CIRCL CARD ═══ -->
+            <div class="detail-card" id="circlCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>✅ CIRCL hashlookup</h3>
+                    <span class="engine-badge">Known-Good / NSRL Database</span>
+                </div>
+                <div id="circlDetails"></div>
+            </div>
+
+            <!-- ═══ METADEFENDER CARD ═══ -->
+            <div class="detail-card" id="mdCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>🔬 MetaDefender — Multi-AV</h3>
+                    <span class="engine-badge" id="mdBadge">Multi-Engine AV Scan</span>
+                </div>
+                <div class="vt-stats" id="mdStats"></div>
+                <table class="vendor-table" id="mdTable" style="display:none">
+                    <thead>
+                        <tr>
+                            <th>AV Engine</th>
+                            <th>Verdict</th>
+                            <th>Detection</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mdTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- ═══ MITRE ATT&CK CARD ═══ -->
+            <div class="detail-card" id="mitreCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>🎯 MITRE ATT&CK Techniques</h3>
+                    <span class="engine-badge">Mapped TTPs</span>
+                </div>
+                <div id="mitreList"></div>
+            </div>
+
+            <!-- ═══ FLAGS CARD ═══ -->
+            <div class="detail-card" id="flagsCard" style="display:none">
+                <div class="detail-card-hdr">
+                    <h3>🚩 Detection Flags</h3>
+                </div>
+                <div id="flagsList"></div>
+            </div>
+
+            <!-- ═══ CLEAN STATE ═══ -->
+            <div id="cleanCard" style="display:none">
+                <div class="clean-banner">
+                    <div class="big-icon">✅</div>
+                    <h3 style="color:#22c55e">No threats detected</h3>
+                    <p>This hash was not found in any of our threat intelligence sources.</p>
+                    <p style="margin-top:8px;font-size:0.8rem;color:#6b7280">Not in MalwareBazaar (1M+ hashes) · Not flagged by VirusTotal · Not in OTX pulses</p>
+                </div>
+            </div>
+
+            <!-- ═══ ACTIONS ═══ -->
+            <div class="actions-row" style="margin-top:20px">
+                <a href="index.html" class="action-btn btn-primary">🔍 Scan Another</a>
+                <button class="action-btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+                <a href="dashboard.html" class="action-btn btn-secondary">📊 Dashboard</a>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ═══ CHATBOT BUBBLE ═══ -->
+    <button id="tlChatBubble" title="Ask ThreatLens AI">
+        🤖
+        <span class="tl-notif" id="tlNotif"></span>
+    </button>
+
+    <div id="tlChatWindow">
+        <div id="tlChatHeader">
+            <div class="tl-avatar">🛡️</div>
+            <div class="tl-hdr-info">
+                <strong>ThreatLens AI</strong>
+                <span>● Online</span>
+            </div>
+            <button id="tlChatClose">✕</button>
+        </div>
+        <div id="tlChatMessages"></div>
+        <div class="tl-suggestions" id="tlSuggestions"></div>
+        <div id="tlChatInputRow">
+            <textarea id="tlChatInput" rows="1" placeholder="Ask about this scan result…"></textarea>
+            <button id="tlChatSend">➤</button>
+        </div>
+    </div>
+
+    <script>
+        /* ── Theme & Auth ── */
+        document.getElementById("username").textContent = sessionStorage.getItem("userName") || "User";
+        document.getElementById("logoutBtn").onclick = function() {
+            sessionStorage.clear();
+            location.href = "login.html";
+        };
+        var themeBtn = document.getElementById("themeToggle");
+        var sv = localStorage.getItem("theme") || "dark";
+        document.body.className = sv;
+        themeBtn.textContent = sv === "dark" ? "☀️" : "🌙";
+        themeBtn.onclick = function() {
+            var d = document.body.classList.contains("dark");
+            document.body.className = d ? "light" : "dark";
+            themeBtn.textContent = d ? "🌙" : "☀️";
+            localStorage.setItem("theme", d ? "light" : "dark");
+        };
+
+        /* ── Helpers ── */
+        function gid(id) {
+            return document.getElementById(id);
+        }
+
+        function esc(s) {
+            return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function show(id) {
+            var e = gid(id);
+            if (e) e.style.display = "";
+        }
+
+        var COLORS = {
+            Malicious: "#ef4444",
+            Suspicious: "#f97316",
+            Clean: "#22c55e"
+        };
+        var ICONS = {
+            Malicious: "☠️",
+            Suspicious: "⚠️",
+            Clean: "✅"
+        };
+
+        /* ── Load result ── */
+        var raw = sessionStorage.getItem("hashScanResult");
+        if (!raw) {
+            gid("verdictBanner").innerHTML = '<div style="padding:40px;text-align:center"><h2>No result found.</h2><a href="index.html" style="color:#60a5fa">← Go back</a></div>';
+        } else {
+            renderAll(JSON.parse(raw));
+        }
+
+        function renderAll(d) {
+            var engines = d.engines || {};
+            var verdict = d.verdict || "Clean";
+            var color = COLORS[verdict] || "#9ca3af";
+
+            gid("hashDisplay").textContent = d.input || "—";
+            gid("hashTypePill").textContent = d.hash_type || "—";
+
+            gid("verdictBanner").style.borderLeftColor = color;
+            gid("verdictIcon").textContent = ICONS[verdict] || "❓";
+            gid("verdictText").textContent = verdict;
+            gid("verdictText").style.color = color;
+            gid("verdictSub").textContent = "Risk: " + (d.risk || "Low") + (d.malware_family && d.malware_family !== "Unknown" ? " · " + d.malware_family : "");
+
+            var tt = d.threat_type || "";
+            if (tt && tt !== "Unknown") {
+                var cls = verdict === "Malicious" ? "tb-mal" : verdict === "Suspicious" ? "tb-sus" : "tb-clean";
+                var icon = tt.toLowerCase().indexOf("ransom") >= 0 ? "🔒" : tt.toLowerCase().indexOf("trojan") >= 0 ? "🐴" : tt.toLowerCase().indexOf("stealer") >= 0 ? "🕵️" : tt.toLowerCase().indexOf("miner") >= 0 ? "⛏️" : tt.toLowerCase().indexOf("worm") >= 0 ? "🪱" : tt.toLowerCase().indexOf("loader") >= 0 ? "📦" : tt.toLowerCase().indexOf("backdoor") >= 0 ? "🚪" : "⚠️";
+                gid("threatTypeBadge").innerHTML = "<span class='threat-type-badge " + cls + "'>" + icon + " " + esc(tt) + "</span>";
+                gid("threatTypeBadge").style.display = "inline";
+            }
+
+            var score = d.threat_score || 0;
+            gid("threatScore").textContent = score;
+            gid("threatScore").style.color = color;
+            setTimeout(function() {
+                gid("threatBar").style.width = score + "%";
+                gid("threatBar").style.background = color;
+            }, 100);
+
+            renderEngineChips(engines, verdict);
+            renderLocalDB(engines.local_db || {});
+            renderVT(engines.virustotal || {});
+            renderOTX(engines.otx || {});
+            renderCIRCL(engines.circl || {});
+            renderMetaDefender(engines.metadefender || {});
+            renderMITRE(d.mitre_techniques || []);
+
+            if (d.flags && d.flags.length) {
+                show("flagsCard");
+                gid("flagsList").innerHTML = d.flags.map(function(f) {
+                    return "<div class='flag-item'>" + esc(f) + "</div>";
+                }).join("");
+            }
+            if (verdict === "Clean") show("cleanCard");
+        }
+
+        function renderEngineChips(engines, verdict) {
+            var defs = [{
+                key: "local_db",
+                icon: "🗄️",
+                label: "Local DB (1M+)"
+            }, {
+                key: "virustotal",
+                icon: "🛡️",
+                label: "VirusTotal"
+            }, {
+                key: "otx",
+                icon: "📡",
+                label: "AlienVault OTX"
+            }, {
+                key: "circl",
+                icon: "✅",
+                label: "CIRCL hashlookup"
+            }, {
+                key: "metadefender",
+                icon: "🔬",
+                label: "MetaDefender"
+            }, ];
+            gid("enginesGrid").innerHTML = defs.map(function(d) {
+                var eng = engines[d.key] || {};
+                var status = eng.status || "unavailable";
+                var v, color;
+                if (status === "unavailable" || status === "error") {
+                    v = "N/A";
+                    color = "#6b7280";
+                } else if (status === "not_found" || status === "clean") {
+                    v = d.key === "circl" ? "Unknown" : "Clean";
+                    color = d.key === "circl" ? "#6b7280" : "#22c55e";
+                } else if (status === "not_applicable") {
+                    v = "N/A";
+                    color = "#6b7280";
+                } else if (status === "found") {
+                    v = eng.verdict || "Malicious";
+                    color = COLORS[v] || "#ef4444";
+                } else {
+                    v = eng.verdict || "—";
+                    color = COLORS[v] || "#9ca3af";
+                }
+                color = COLORS[v] || color;
+                var sub = "";
+                if (d.key === "virustotal" && eng.detections) sub = "<small>" + esc(eng.detections) + "</small>";
+                if (d.key === "local_db" && eng.malware_family && eng.malware_family !== "Unknown") sub = "<small>" + esc(eng.malware_family) + "</small>";
+                if (d.key === "otx" && eng.pulse_count) sub = "<small>" + eng.pulse_count + " pulse(s)</small>";
+                if (d.key === "circl" && eng.known_good) sub = "<small>Trust: " + eng.trust_score + "/100</small>";
+                if (d.key === "metadefender" && eng.status === "found") sub = "<small>" + eng.malicious + "/" + eng.total_engines + " detected</small>";
+                return "<div class='engine-chip' style='border-color:" + color + "44'><span class='engine-name'>" + d.icon + " " + d.label + "</span><span class='engine-verdict' style='color:" + color + "'>" + esc(v) + "</span>" + sub + "</div>";
+            }).join("");
+        }
+
+        function renderCommunityBanner(community) {
+            if (!community || community.status === "not_found") return "";
+
+            const total = community.times_seen || 0;
+            const mal = community.malicious_reports || 0;
+            const sus = community.suspicious_reports || 0;
+            const last = community.last_seen ? community.last_seen.split(" ")[0] : "—";
+            const verdict = community.last_verdict || "";
+
+            // Determine banner color
+            let color = "#2196f3",
+                icon = "👥";
+            if (mal > 0) {
+                color = "#f44336";
+                icon = "🚨";
+            } else if (sus > 0) {
+                color = "#ff9800";
+                icon = "⚠️";
+            }
+
+            return `
+        <div style="
+            background: rgba(${mal > 0 ? "244,67,54" : sus > 0 ? "255,152,0" : "33,150,243"},0.1);
+            border: 1px solid ${color};
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        ">
+            <span style="font-size:1.4em;">${icon}</span>
+            <div>
+                <p style="color:${color};font-weight:bold;margin-bottom:4px;">
+                    ThreatLens Community Intel — Seen ${total} time(s) across all users
+                </p>
+                <p style="font-size:0.83em;color:#aaa;">
+                    ${mal} malicious report(s) &nbsp;|&nbsp;
+                    ${sus} suspicious report(s) &nbsp;|&nbsp;
+                    Last seen: ${last} &nbsp;|&nbsp;
+                    Last verdict: <strong style="color:${color};">${verdict}</strong>
+                </p>
+            </div>
+        </div>`;
+        }
+
+        function renderLocalDB(db) {
+            show("localDbCard");
+            if (db.status === "found") {
+                gid("localDbBadge").innerHTML = "<span style='color:#ef4444;font-weight:700'>☠️ BLACKLISTED</span>";
+                gid("localDbDetails").innerHTML = "<table class='info-table'>" +
+                    "<tr><td>Malware Family</td><td style='color:#ef4444;font-weight:700'>" + esc(db.malware_family || "Unknown") + "</td></tr>" +
+                    "<tr><td>Malware Type</td><td>" + esc(db.malware_type || "—") + "</td></tr>" +
+                    "<tr><td>SHA256</td><td style='font-family:monospace;font-size:0.78rem;color:#60a5fa'>" + esc(db.sha256 || "—") + "</td></tr>" +
+                    (db.md5 ? "<tr><td>MD5</td><td style='font-family:monospace;font-size:0.78rem'>" + esc(db.md5) + "</td></tr>" : "") +
+                    "<tr><td>First Seen</td><td>" + esc(db.first_seen || "—") + "</td></tr>" +
+                    "<tr><td>Source</td><td>" + esc(db.source || "Local DB") + "</td></tr>" +
+                    (db.tags && db.tags.length ? "<tr><td>Tags</td><td><div class='tag-list'>" + db.tags.map(function(t) {
+                        return "<span class='tag'>" + esc(t) + "</span>";
+                    }).join("") + "</div></td></tr>" : "") +
+                    "</table>";
+            } else {
+                gid("localDbBadge").innerHTML = "<span style='color:#22c55e'>✅ Not Found</span>";
+                gid("localDbDetails").innerHTML = "<div style='color:#6b7280;font-size:0.85rem;padding:8px 0'>Hash not found in local malware database.<br><small style='color:#4b5563'>Over 1,000,000 MalwareBazaar hashes checked.</small></div>";
+            }
+        }
+
+        var vtAllRows = [];
+
+        function renderVT(vt) {
+            if (!vt || vt.status === "unavailable") return;
+            show("vtCard");
+            var mal = vt.malicious || 0,
+                sus = vt.suspicious || 0,
+                und = vt.undetected || 0,
+                tot = vt.total_engines || 0;
+            gid("vtStats").innerHTML =
+                "<span class='vt-stat malicious'>🔴 " + mal + " Malicious</span>" +
+                "<span class='vt-stat suspicious'>🟠 " + sus + " Suspicious</span>" +
+                "<span class='vt-stat undetected'>🟢 " + und + " Clean</span>" +
+                "<span class='vt-stat total'>📊 " + tot + " Total</span>";
+            vtAllRows = vt.vendor_table || [];
+            drawVTTable(vtAllRows);
+            if (vt.tags && vt.tags.length) gid("vtTags").innerHTML = vt.tags.map(function(t) {
+                return "<span class='tag'>" + esc(t) + "</span>";
+            }).join("");
+        }
+
+        function drawVTTable(rows) {
+            if (!rows || !rows.length) {
+                gid("vtTableBody").innerHTML = "<tr><td colspan='3' style='text-align:center;color:#6b7280;padding:20px'>No vendor data available</td></tr>";
+                return;
+            }
+            gid("vtTableBody").innerHTML = rows.map(function(r) {
+                var cat = (r.category || "undetected").toLowerCase();
+                var cls = cat === "malicious" ? "vt-row-malicious" : (cat === "suspicious" || cat === "phishing") ? "vt-row-suspicious" : "";
+                var badge = cat === "malicious" ? "<span style='color:#ef4444;font-weight:700'>🔴 Malicious</span>" : cat === "suspicious" ? "<span style='color:#f97316;font-weight:700'>🟠 Suspicious</span>" : cat === "phishing" ? "<span style='color:#f97316;font-weight:700'>🎣 Phishing</span>" : "<span style='color:#22c55e'>🟢 Clean</span>";
+                return "<tr class='" + cls + "'><td class='vendor-name'>" + esc(r.vendor) + "</td><td>" + badge + "</td><td style='color:#9ca3af;font-size:0.8rem'>" + esc(r.result || "—") + "</td></tr>";
+            }).join("");
+        }
+
+        function filterVT(cat, btn) {
+            document.querySelectorAll(".vt-filter-btn").forEach(function(b) {
+                b.classList.remove("active");
+            });
+            btn.classList.add("active");
+            drawVTTable(cat === "all" ? vtAllRows : vtAllRows.filter(function(r) {
+                return r.category === cat;
+            }));
+        }
+
+        function renderOTX(otx) {
+            if (!otx || (!otx.pulse_count && otx.status !== "found")) return;
+            show("otxCard");
+            gid("otxStats").innerHTML = "<span class='vt-stat total'>📡 " + (otx.pulse_count || 0) + " Pulse(s)</span>";
+            var meta = "";
+            if (otx.malware_families && otx.malware_families.length) meta += "<div class='tag-list'>" + otx.malware_families.map(function(f) {
+                return "<span class='tag' style='color:#f87171;border-color:rgba(239,68,68,0.3)'>" + esc(f) + "</span>";
+            }).join("") + "</div>";
+            if (otx.tags && otx.tags.length) meta += "<div class='tag-list' style='margin-top:8px'>" + otx.tags.map(function(t) {
+                return "<span class='tag'>" + esc(t) + "</span>";
+            }).join("") + "</div>";
+            gid("otxMeta").innerHTML = meta;
+            if (otx.pulses && otx.pulses.length) gid("otxPulses").innerHTML = otx.pulses.map(function(p) {
+                return "<div class='pulse-row'><div class='pulse-name'>" + esc(p.name) + "</div><div class='pulse-meta'>By " + esc(p.author) + " · " + esc(p.created) + "</div></div>";
+            }).join("");
+        }
+
+        function renderCIRCL(circl) {
+            if (!circl || circl.status === "unavailable") return;
+            show("circlCard");
+            if (circl.status === "found" && circl.known_good) {
+                var trust = circl.trust_score || 0;
+                var trustColor = trust >= 75 ? "#22c55e" : trust >= 50 ? "#f97316" : "#9ca3af";
+                gid("circlDetails").innerHTML =
+                    "<div style='margin-bottom:12px;padding:10px 14px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-size:0.84rem;color:#22c55e'>✅ Known-good legitimate file (NSRL / trusted source)</div>" +
+                    "<table class='info-table'>" +
+                    "<tr><td>Trust Score</td><td style='color:" + trustColor + ";font-weight:700'>" + trust + " / 100</td></tr>" +
+                    (circl.file_name ? "<tr><td>File Name</td><td>" + esc(circl.file_name) + "</td></tr>" : "") +
+                    (circl.product_name ? "<tr><td>Product</td><td>" + esc(circl.product_name) + "</td></tr>" : "") +
+                    (circl.product_version ? "<tr><td>Version</td><td>" + esc(circl.product_version) + "</td></tr>" : "") +
+                    (circl.os ? "<tr><td>OS</td><td>" + esc(circl.os) + "</td></tr>" : "") +
+                    (circl.file_size ? "<tr><td>File Size</td><td>" + esc(circl.file_size) + "</td></tr>" : "") +
+                    "<tr><td>Source</td><td>" + esc(circl.source || "NSRL") + "</td></tr>" +
+                    "</table>";
+            } else if (circl.status === "not_found") {
+                gid("circlDetails").innerHTML = "<div style='color:#6b7280;font-size:0.85rem;padding:8px 0'>Not found in CIRCL known-good database.<br><small style='color:#4b5563'>Does not confirm malicious — file may simply be unknown to NSRL.</small></div>";
+            } else if (circl.status === "error") {
+                gid("circlDetails").innerHTML = "<div style='color:#6b7280;font-size:0.85rem;padding:8px 0'>CIRCL lookup unavailable: " + esc(circl.error || "") + "</div>";
+            }
+        }
+
+        function renderMetaDefender(md) {
+            if (!md || md.status === "unavailable" || md.status === "error") return;
+            show("mdCard");
+            if (md.status === "not_found") {
+                gid("mdStats").innerHTML = "<span style='color:#6b7280;font-size:0.85rem'>Hash not found in MetaDefender database.</span>";
+                return;
+            }
+            if (md.status === "found") {
+                var mal = md.malicious || 0,
+                    cln = md.clean || 0,
+                    tot = md.total_engines || 0;
+                gid("mdBadge").innerHTML = mal > 0 ? "<span style='color:#ef4444;font-weight:700'>⚠️ " + mal + " Detections</span>" : "<span style='color:#22c55e'>✅ Clean</span>";
+                gid("mdStats").innerHTML =
+                    "<span class='vt-stat malicious'>🔴 " + mal + " Malicious</span>" +
+                    "<span class='vt-stat undetected'>🟢 " + cln + " Clean</span>" +
+                    "<span class='vt-stat total'>📊 " + tot + " Total</span>" +
+                    (md.file_name ? "<span class='vt-stat total'>📄 " + esc(md.file_name) + "</span>" : "") +
+                    (md.file_type ? "<span class='vt-stat total'>🗂️ " + esc(md.file_type) + "</span>" : "");
+                var vendors = (md.vendors || []).filter(function(v) {
+                    return v.verdict !== "unknown";
+                });
+                if (vendors.length) {
+                    gid("mdTable").style.display = "";
+                    gid("mdTableBody").innerHTML = vendors.map(function(v) {
+                        var badge = v.verdict === "malicious" ? "<span style='color:#ef4444;font-weight:700'>🔴 Malicious</span>" : v.verdict === "suspicious" ? "<span style='color:#f97316;font-weight:700'>🟠 Suspicious</span>" : "<span style='color:#22c55e'>🟢 Clean</span>";
+                        return "<tr class='" + (v.verdict === "malicious" ? "vt-row-malicious" : v.verdict === "suspicious" ? "vt-row-suspicious" : "") + "'><td class='vendor-name'>" + esc(v.engine) + "</td><td>" + badge + "</td><td style='color:#9ca3af;font-size:0.8rem'>" + esc(v.threat || "—") + "</td></tr>";
+                    }).join("");
+                }
+            }
+        }
+
+        function renderMITRE(techniques) {
+            if (!techniques || !techniques.length) return;
+            show("mitreCard");
+            gid("mitreList").innerHTML = techniques.map(function(t) {
+                return "<div style='display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04)'>" +
+                    "<span style='font-family:monospace;font-size:0.78rem;color:#60a5fa;background:rgba(96,165,250,0.1);padding:3px 8px;border-radius:6px;white-space:nowrap'>" + esc(t.technique_id) + "</span>" +
+                    "<span style='font-size:0.85rem;color:#d1d5db'>" + esc(t.technique_name) + "</span>" +
+                    "<a href='https://attack.mitre.org/techniques/" + esc(t.technique_id) + "/' target='_blank' style='margin-left:auto;font-size:0.75rem;color:#6b7280;text-decoration:none'>↗ View</a>" +
+                    "</div>";
+            }).join("");
+        }
+
+        /* ══════════════════════════════════════════════
+           CHATBOT WIDGET
+        ══════════════════════════════════════════════ */
+        (function() {
+            var SCAN_KEY = "hashScanResult";
+            var API_ENDPOINT = "http://127.0.0.1:5000/api/chat/ask"; // FIX: full URL + correct prefix
+
+            var SUGGESTIONS = [
+                "Is this dangerous?",
+                "What should I do?",
+                "Explain the verdict",
+                "What is the threat type?",
+                "Which engines flagged it?"
+            ];
+
+            var isOpen = false;
+            var isLoading = false;
+            var scanCtx = null;
+
+            var bubble = document.getElementById("tlChatBubble");
+            var win = document.getElementById("tlChatWindow");
+            var closeBtn = document.getElementById("tlChatClose");
+            var messages = document.getElementById("tlChatMessages");
+            var input = document.getElementById("tlChatInput");
+            var sendBtn = document.getElementById("tlChatSend");
+            var suggs = document.getElementById("tlSuggestions");
+            var notif = document.getElementById("tlNotif");
+
+            try {
+                var raw = sessionStorage.getItem(SCAN_KEY);
+                if (raw) {
+                    scanCtx = JSON.parse(raw);
+                    scanCtx.scan_type = "hash";
+                }
+            } catch (e) {}
+
+            setTimeout(function() {
+                if (!isOpen) notif.style.display = "block";
+            }, 3000);
+
+            bubble.addEventListener("click", function() {
+                isOpen = !isOpen;
+                win.classList.toggle("open", isOpen);
+                if (isOpen) {
+                    bubble.textContent = "✕";
+                    bubble.appendChild(notif);
+                    notif.style.display = "none";
+                    if (messages.children.length === 0) showWelcome();
+                    setTimeout(function() {
+                        input.focus();
+                    }, 250);
+                } else {
+                    bubble.textContent = "🤖";
+                    bubble.appendChild(notif);
+                }
+            });
+
+            closeBtn.addEventListener("click", function() {
+                isOpen = false;
+                win.classList.remove("open");
+                bubble.textContent = "🤖";
+                bubble.appendChild(notif);
+            });
+
+            function showWelcome() {
+                var verdict = scanCtx ? scanCtx.verdict : null;
+                var greeting = verdict ?
+                    "Hi! I can see this scan returned a <strong style='color:" + verdictColor(verdict) + "'>" + verdict + "</strong> verdict. What would you like to know about it?" :
+                    "Hi! I'm ThreatLens AI. Ask me anything about this scan result.";
+                appendMsg("bot", greeting);
+                renderSuggestions();
+            }
+
+            function verdictColor(v) {
+                return v === "Malicious" ? "#ef4444" : v === "Suspicious" ? "#f97316" : "#22c55e";
+            }
+
+            function renderSuggestions() {
+                suggs.innerHTML = SUGGESTIONS.map(function(s) {
+                    return "<button class='tl-suggestion' onclick='tlAskSuggestion(\"" + s.replace(/"/g, "&quot;") + "\")'>" + s + "</button>";
+                }).join("");
+            }
+
+            window.tlAskSuggestion = function(text) {
+                input.value = text;
+                sendMessage();
+            };
+
+            function appendMsg(role, html) {
+                var div = document.createElement("div");
+                div.className = "tl-msg " + role;
+                div.innerHTML = html;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function showTyping() {
+                var div = document.createElement("div");
+                div.className = "tl-typing";
+                div.id = "tlTyping";
+                div.innerHTML = "<div class='tl-dot'></div><div class='tl-dot'></div><div class='tl-dot'></div>";
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function hideTyping() {
+                var t = document.getElementById("tlTyping");
+                if (t) t.remove();
+            }
+
+            function sendMessage() {
+                var text = input.value.trim();
+                if (!text || isLoading) return;
+                suggs.innerHTML = "";
+                appendMsg("user", escHtml(text));
+                input.value = "";
+                input.style.height = "auto";
+                isLoading = true;
+                sendBtn.disabled = true;
+                showTyping();
+
+                fetch(API_ENDPOINT, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: text,
+                            context: scanCtx || {}
+                        })
+                    })
+                    .then(function(r) {
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        hideTyping();
+                        if (data.success) {
+                            appendMsg("bot", escHtml(data.reply));
+                        } else {
+                            appendMsg("bot", "<span style='color:#f87171'>⚠️ " + escHtml(data.message || "Something went wrong.") + "</span>");
+                        }
+                    })
+                    .catch(function() {
+                        hideTyping();
+                        appendMsg("bot", "<span style='color:#f87171'>⚠️ Could not reach the AI. Make sure Flask and Ollama are running.</span>");
+                    })
+                    .finally(function() {
+                        isLoading = false;
+                        sendBtn.disabled = false;
+                        input.focus();
+                    });
+            }
+
+            sendBtn.addEventListener("click", sendMessage);
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            input.addEventListener("input", function() {
+                this.style.height = "auto";
+                this.style.height = Math.min(this.scrollHeight, 80) + "px";
+            });
+
+            function escHtml(s) {
+                return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+            }
+        })();
+
+        function renderCommunityBanner(community) {
+            if (!community || community.status === "not_found") return "";
+
+            const total = community.times_seen || 0;
+            const mal = community.malicious_reports || 0;
+            const sus = community.suspicious_reports || 0;
+            const last = community.last_seen ? community.last_seen.split(" ")[0] : "—";
+            const verdict = community.last_verdict || "";
+
+            // Determine banner color
+            let color = "#2196f3",
+                icon = "👥";
+            if (mal > 0) {
+                color = "#f44336";
+                icon = "🚨";
+            } else if (sus > 0) {
+                color = "#ff9800";
+                icon = "⚠️";
+            }
+
+            return `
+        <div style="
+            background: rgba(${mal > 0 ? "244,67,54" : sus > 0 ? "255,152,0" : "33,150,243"},0.1);
+            border: 1px solid ${color};
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        ">
+            <span style="font-size:1.4em;">${icon}</span>
+            <div>
+                <p style="color:${color};font-weight:bold;margin-bottom:4px;">
+                    ThreatLens Community Intel — Seen ${total} time(s) across all users
+                </p>
+                <p style="font-size:0.83em;color:#aaa;">
+                    ${mal} malicious report(s) &nbsp;|&nbsp;
+                    ${sus} suspicious report(s) &nbsp;|&nbsp;
+                    Last seen: ${last} &nbsp;|&nbsp;
+                    Last verdict: <strong style="color:${color};">${verdict}</strong>
+                </p>
+            </div>
+        </div>`;
+        }
+    </script>
+</body>
+
+</html>

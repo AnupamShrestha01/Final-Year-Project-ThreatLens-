@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens | Register</title>
+    <link rel="stylesheet" href="../css/auth.css">
+    <script defer src="../js/auth.js"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <img src="../assets/logo.png" class="auth-logo">
+            <h2>Create Account</h2>
+
+            <input type="text" id="regName" placeholder="Full Name" required>
+            <input type="email" id="regEmail" placeholder="Email" required>
+            <input type="password" id="regPassword" placeholder="Password" required>
+
+            <button onclick="register()">Register</button>
+
+            <p class="switch">
+                Already have an account?
+                <a href="login.html">Login</a>
+            </p>
+
+            <p id="registerMsg" class="success"></p>
+        </div>
+    </div>
+</body>
+
+</html>

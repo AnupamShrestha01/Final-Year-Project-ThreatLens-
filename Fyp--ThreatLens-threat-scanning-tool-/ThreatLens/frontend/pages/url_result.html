@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens | URL Scan Result</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/result.css">
+    <script src="../js/report_generator.js"></script>
+    <style>
+        .url-banner-target {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        
+        body.light .url-banner-target {
+            background: #f4f6fb;
+            border-color: #e0e0e0;
+        }
+        
+        .url-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: rgba(144, 202, 249, 0.12);
+            color: #90caf9;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        body.light .url-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .url-text {
+            color: #7ecfff;
+            font-family: monospace;
+            font-size: 0.88rem;
+        }
+        
+        body.light .url-text {
+            color: #1565c0;
+        }
+        
+        .screenshot-wrap {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 12px;
+        }
+        
+        .screenshot-wrap img {
+            width: 100%;
+            display: block;
+        }
+        
+        body.light .screenshot-wrap {
+            border-color: #e0e0e0;
+        }
+        
+        .whois-timeline {
+            display: flex;
+            gap: 0;
+            margin: 14px 0 0;
+        }
+        
+        .whois-event {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            margin: 0 4px;
+        }
+        
+        body.light .whois-event {
+            background: #f8f9fa;
+            border-color: #e8e8e8;
+        }
+        
+        .whois-event-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .whois-event-date {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+        
+        .risk-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        
+        .risk-LOW {
+            background: rgba(0, 200, 83, 0.12);
+            color: #00c853;
+        }
+        
+        .risk-HIGH {
+            background: rgba(255, 171, 0, 0.12);
+            color: #ffab00;
+        }
+        
+        .risk-CRITICAL {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+        }
+        
+        .domain-warning {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(255, 171, 0, 0.08);
+            border-left: 3px solid #ffab00;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.88rem;
+            margin-top: 12px;
+        }
+        
+        .ns-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .ns-chip {
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: monospace;
+        }
+        
+        body.light .ns-chip {
+            background: #f0f0f0;
+            border-color: #ddd;
+        }
+        
+        .scan-again-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            text-decoration: none;
+        }
+        
+        .scan-again-btn:hover {
+            opacity: 0.88;
+        }
+        
+        .urlscan-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        @media(max-width:600px) {
+            .urlscan-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pulse-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        body.light .pulse-row {
+            border-bottom-color: #f0f0f0;
+        }
+        
+        .pulse-row:last-child {
+            border-bottom: none;
+        }
+        
+        .pulse-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .pulse-meta {
+            font-size: 0.78rem;
+            color: #888;
+        }
+        
+        body.light .pulse-meta {
+            color: #999;
+        }
+        
+        .threat-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            border: 1.5px solid;
+            animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes badgePop {
+            from {
+                transform: scale(0.7);
+                opacity: 0
+            }
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+        
+        .threat-badge-malicious {
+            background: rgba(255, 68, 68, 0.15);
+            color: #ff4444;
+            border-color: rgba(255, 68, 68, 0.4);
+        }
+        
+        .threat-badge-suspicious {
+            background: rgba(255, 136, 0, 0.15);
+            color: #ff8800;
+            border-color: rgba(255, 136, 0, 0.4);
+        }
+        
+        .threat-badge-clean {
+            background: rgba(0, 200, 83, 0.12);
+            color: #00c853;
+            border-color: rgba(0, 200, 83, 0.3);
+        }
+        
+        #reconBtn {
+            padding: 10px 24px;
+            background: rgba(20, 184, 166, 0.15);
+            color: #2dd4bf;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        #reconBtn:hover:not(:disabled) {
+            background: rgba(20, 184, 166, 0.25);
+            border-color: rgba(20, 184, 166, 0.5);
+        }
+        
+        #reconBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .recon-port-open {
+            color: #ff8800;
+            font-weight: 700;
+        }
+        
+        .recon-port-safe {
+            color: #00c853;
+        }
+        
+        .recon-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .recon-table th {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 0.72rem;
+            color: #4b5563;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .recon-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.82rem;
+        }
+        
+        .actions-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            color: #d1d5db;
+        }
+        
+        body.light .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+    </style>
+</head>
+
+<body class="dark">
+    <script>
+        var _t = localStorage.getItem("theme");
+        if (_t) document.body.className = _t;
+    </script>
+
+    <header class="header">
+        <div class="brand">
+            <img src="../assets/logo.png" class="logo">
+            <div class="brand-text">
+                <h1>ThreatLens</h1><span>One lens. Total threat visibility.</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" title="Toggle Theme">☀️</button>
+            <button id="logoutBtn">Logout</button>
+            <button onclick="generateScanReport('url')" style="background:#3f51b5;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;">
+    📄 Generate PDF Report
+</button>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="profile">
+                <div class="avatar">👤</div>
+                <p id="username">User</p>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="index.html">Scan</a>
+                <a href="history.html">Scan History</a>
+                <a href="reports.html">Reports</a>
+                <a href="profile.html">Profile</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+        </aside>
+
+        <main class="content result-page">
+
+            <!-- TARGET URL BANNER -->
+            <div class="url-banner-target">
+                <span class="url-badge" id="inputTypeBadge">URL</span>
+                <span class="url-text" id="targetUrl">—</span>
+                <span id="resolvedIp" style="color:#888;font-size:0.8rem;margin-left:auto;white-space:nowrap"></span>
+            </div>
+
+            <!-- VERDICT BANNER -->
+            <div id="verdictBanner" class="verdict-banner">
+                <div class="verdict-icon" id="verdictIcon">🔍</div>
+                <div class="verdict-info">
+                    <h2 id="verdictText">Analyzing...</h2>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+                        <p id="verdictSub" style="margin:0">—</p>
+                        <span id="threatTypeBadge" style="display:none"></span>
+                    </div>
+                </div>
+                <div class="threat-meter">
+                    <div class="threat-label">Threat Score</div>
+                    <div class="threat-score" id="threatScore">0</div>
+                    <div class="threat-bar-wrap">
+                        <div class="threat-bar" id="threatBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENGINE CHIPS -->
+            <div class="result-card engines-card">
+                <h3>🔬 Scan Engines</h3>
+                <div class="engines-grid" id="enginesGrid"></div>
+            </div>
+
+            <!-- VIRUSTOTAL URL RESULTS -->
+            <div class="result-card" id="vtCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🛡️ VirusTotal — URL Analysis</h3>
+                    <div class="vt-stats" id="vtStats"></div>
+                </div>
+                <div class="vt-filter-bar">
+                    <button class="vt-filter-btn active" onclick="filterVTUrl('all',this)">All</button>
+                    <button class="vt-filter-btn" onclick="filterVTUrl('malicious',this)">🔴 Malicious</button>
+                    <button class="vt-filter-btn" onclick="filterVTUrl('suspicious',this)">🟠 Suspicious</button>
+                    <button class="vt-filter-btn" onclick="filterVTUrl('undetected',this)">🟢 Undetected</button>
+                </div>
+                <div class="vt-table-wrap">
+                    <table class="vt-table">
+                        <thead>
+                            <tr>
+                                <th>Security Vendor</th>
+                                <th>Category</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vtUrlTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="vtUrlTags" class="vt-tags" style="margin-top:14px"></div>
+                <div id="vtUrlMeta" style="margin-top:14px"></div>
+            </div>
+
+            <!-- LOCAL DB MATCH -->
+            <div class="result-card" id="dbCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🗄️ Local Threat Database — Match Found</h3>
+                    <span style="color:#ff4444;font-weight:700;font-size:0.95rem">☠️ Blacklisted</span>
+                </div>
+                <div id="dbDetails"></div>
+            </div>
+
+            <!-- URLSCAN.IO -->
+            <div class="result-card" id="urlscanCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🔎 URLScan.io — Page Analysis</h3>
+                    <div id="urlscanVerdict" class="ha-verdict-chip"></div>
+                </div>
+                <div class="urlscan-meta">
+                    <table class="info-table">
+                        <tr>
+                            <td>Page Title</td>
+                            <td id="usTitle">—</td>
+                        </tr>
+                        <tr>
+                            <td>Server IP</td>
+                            <td id="usIp" class="mono">—</td>
+                        </tr>
+                        <tr>
+                            <td>Country</td>
+                            <td id="usCountry">—</td>
+                        </tr>
+                        <tr>
+                            <td>Server</td>
+                            <td id="usServer">—</td>
+                        </tr>
+                        <tr>
+                            <td>ASN</td>
+                            <td id="usAsn">—</td>
+                        </tr>
+                    </table>
+                    <div>
+                        <div id="urlscanScreenshot"></div>
+                        <div id="urlscanTags" class="vt-tags" style="margin-top:10px"></div>
+                    </div>
+                </div>
+                <div style="margin-top:12px" id="urlscanLink"></div>
+            </div>
+
+            <!-- WHOIS -->
+            <div class="result-card" id="whoisCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🌐 WHOIS — Domain Registration</h3>
+                    <div id="whoisRisk"></div>
+                </div>
+                <div class="result-grid" style="margin-bottom:0">
+                    <table class="info-table">
+                        <tr>
+                            <td>Domain</td>
+                            <td id="wDomain">—</td>
+                        </tr>
+                        <tr>
+                            <td>Registrar</td>
+                            <td id="wRegistrar">—</td>
+                        </tr>
+                        <tr>
+                            <td>Domain Age</td>
+                            <td id="wAge">—</td>
+                        </tr>
+                        <tr>
+                            <td>Privacy</td>
+                            <td id="wPrivacy">—</td>
+                        </tr>
+                    </table>
+                    <div>
+                        <div class="whois-timeline" id="whoisTimeline"></div>
+                        <div class="ns-chips" id="nsChips"></div>
+                    </div>
+                </div>
+                <div id="whoisWarning"></div>
+            </div>
+
+            <!-- ALIENVAULT OTX -->
+            <div class="result-card" id="otxCard" style="display:none">
+                <div class="vt-header">
+                    <h3>📡 AlienVault OTX — Threat Intelligence</h3>
+                    <div id="otxStats" class="vt-stats"></div>
+                </div>
+                <div id="otxMeta" style="margin-bottom:12px"></div>
+                <div id="otxPulses"></div>
+            </div>
+
+            <!-- GOOGLE SAFE BROWSING -->
+            <div class="result-card" id="gsbCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🔵 Google Safe Browsing</h3>
+                    <div id="gsbVerdict" class="ha-verdict-chip"></div>
+                </div>
+                <table class="info-table" id="gsbTable">
+                    <tr>
+                        <td>Threat Type</td>
+                        <td id="gsbThreatType">—</td>
+                    </tr>
+                    <tr>
+                        <td>Platform</td>
+                        <td id="gsbPlatform">—</td>
+                    </tr>
+                    <tr>
+                        <td>Total Matches</td>
+                        <td id="gsbMatches">—</td>
+                    </tr>
+                </table>
+                <div id="gsbMatchList" style="margin-top:12px"></div>
+            </div>
+
+            <!-- LEXICAL ANALYSIS -->
+            <div class="result-card" id="lexicalCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🔍 Lexical URL Analysis</h3>
+                    <div id="lexicalVerdict" class="ha-verdict-chip"></div>
+                </div>
+                <table class="info-table">
+                    <tr>
+                        <td>Threat Type</td>
+                        <td id="lexThreatType">—</td>
+                    </tr>
+                    <tr>
+                        <td>Risk Level</td>
+                        <td id="lexRiskLevel">—</td>
+                    </tr>
+                    <tr>
+                        <td>Score</td>
+                        <td id="lexScore">—</td>
+                    </tr>
+                    <tr>
+                        <td>Checks Run</td>
+                        <td id="lexChecks">14 pattern checks</td>
+                    </tr>
+                </table>
+                <div id="lexFlags" style="margin-top:12px"></div>
+            </div>
+
+            <!-- SSL CERTIFICATE -->
+            <div class="result-card" id="sslCard" style="display:none">
+                <div class="vt-header">
+                    <h3>🔒 SSL Certificate Analysis</h3>
+                    <div id="sslVerdict" class="ha-verdict-chip"></div>
+                </div>
+                <table class="info-table">
+                    <tr>
+                        <td>Has SSL</td>
+                        <td id="sslHas">—</td>
+                    </tr>
+                    <tr>
+                        <td>Issuer</td>
+                        <td id="sslIssuer">—</td>
+                    </tr>
+                    <tr>
+                        <td>Valid From</td>
+                        <td id="sslFrom">—</td>
+                    </tr>
+                    <tr>
+                        <td>Valid To</td>
+                        <td id="sslTo">—</td>
+                    </tr>
+                    <tr>
+                        <td>Days Left</td>
+                        <td id="sslDays">—</td>
+                    </tr>
+                    <tr>
+                        <td>Cert Age</td>
+                        <td id="sslAge">—</td>
+                    </tr>
+                </table>
+                <div id="sslFlags" style="margin-top:12px"></div>
+            </div>
+
+            <!-- DNS INTELLIGENCE CARD -->
+            <div class="result-card" id="dnsCard" style="display:none">
+                <div class="vt-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+                    <h3 style="margin:0">🔎 DNS Intelligence</h3>
+                    <span id="dnsBadge" style="font-size:0.78rem;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.06);color:#9ca3af">dnspython · Direct DNS</span>
+                </div>
+                <div id="dnsContent"></div>
+            </div>
+
+            <!-- DETECTION FLAGS -->
+            <div class="result-card" id="flagsCard" style="display:none">
+                <h3>🚩 Detection Flags</h3>
+                <div class="flags-list" id="flagsList"></div>
+            </div>
+
+            <!-- DEEP RECON ANALYSIS -->
+            <div class="result-card" id="reconCard">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                    <div>
+                        <h3 style="margin:0">🕵️ Deep Recon Analysis</h3>
+                        <p style="margin:6px 0 0;font-size:0.82rem;color:#6b7280">Port scan · Banner grab · ASN · Geolocation · MITRE mapping</p>
+                    </div>
+                    <span style="font-size:0.75rem;padding:3px 12px;border-radius:20px;background:rgba(20,184,166,0.1);color:#2dd4bf;border:1px solid rgba(20,184,166,0.2)">🔍 Passive Recon</span>
+                </div>
+                <div style="padding:10px 14px;margin-bottom:16px;background:rgba(20,184,166,0.06);border:1px solid rgba(20,184,166,0.2);border-radius:8px;font-size:0.82rem;color:#2dd4bf">
+                    ℹ️ Scans top 20 ports, grabs service banners, identifies ASN/geolocation, and maps findings to MITRE ATT&CK techniques. Works on IPs, domains, and URLs.
+                </div>
+                <button id="reconBtn" onclick="runRecon()">🕵️ Run Deep Recon</button>
+                <div id="reconResultSection" style="display:none;margin-top:24px;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px"></div>
+            </div>
+
+            <!-- URL BEHAVIOR ANALYSIS -->
+            <div class="result-card" id="urlBehaviorCard">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                    <div>
+                        <h3 style="margin:0">🌐 Live URL Behavior Analysis</h3>
+                        <p style="margin:6px 0 0;font-size:0.82rem;color:#6b7280">Visit URL in headless browser · capture requests · detect phishing · screenshot</p>
+                    </div>
+                    <span style="font-size:0.75rem;padding:3px 12px;border-radius:20px;background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.2)">🎭 Headless Chrome</span>
+                </div>
+                <div style="padding:10px 14px;margin-bottom:16px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:0.82rem;color:#818cf8">
+                    ℹ️ Visits the URL using a real headless Chromium browser inside an isolated Docker container. Captures all network requests, redirects, scripts, forms, cookies, and takes a screenshot.
+                </div>
+                <button id="urlBehaviorBtn" onclick="runUrlBehavior()" style="padding:10px 24px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:600;transition:all 0.2s">
+                    🌐 Run Live Browser Analysis
+                </button>
+                <div id="urlBehaviorSection" style="display:none;margin-top:24px;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px"></div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="actions-row" style="margin-top:20px">
+                <a href="index.html" class="action-btn btn-primary">🔍 Scan Another</a>
+                <button class="action-btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+                <a href="dashboard.html" class="action-btn btn-secondary">📊 Dashboard</a>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        /* ══ THEME & AUTH ══ */
+        document.getElementById("username").innerText = sessionStorage.getItem("userName") || "User";
+        document.getElementById("logoutBtn").onclick = function() {
+            sessionStorage.clear();
+            location.href = "login.html";
+        };
+        var themeBtn = document.getElementById("themeToggle");
+        var savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+            document.body.className = savedTheme;
+            themeBtn.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        }
+        themeBtn.onclick = function() {
+            var isDark = document.body.classList.contains("dark");
+            document.body.className = isDark ? "light" : "dark";
+            themeBtn.textContent = isDark ? "🌙" : "☀️";
+            localStorage.setItem("theme", isDark ? "light" : "dark");
+        };
+
+        function gid(id) {
+            return document.getElementById(id);
+        }
+
+        function esc(s) {
+            return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function showEl(id) {
+            var e = gid(id);
+            if (e) e.style.display = "";
+        }
+
+        var COLORS = {
+            Malicious: {
+                border: "#ff4444",
+                score: "#ff4444",
+                icon: "☠️"
+            },
+            Suspicious: {
+                border: "#ff8800",
+                score: "#ffab00",
+                icon: "⚠️"
+            },
+            Clean: {
+                border: "#00c853",
+                score: "#00c853",
+                icon: "✅"
+            }
+        };
+
+        /* ══ LOAD RESULT ══ */
+        var raw = sessionStorage.getItem("urlScanResult");
+        if (!raw) window.location.href = "index.html";
+        var data = JSON.parse(raw);
+        renderAll(data);
+
+        function renderAll(d) {
+            var engines = d.engines || {};
+            var verdict = d.verdict || "Clean";
+            var c = COLORS[verdict] || COLORS.Clean;
+
+            gid("targetUrl").textContent = d.input || d.url || "—";
+            gid("inputTypeBadge").textContent = (d.input_type || "url").toUpperCase();
+            if (d.resolved_ip) gid("resolvedIp").textContent = "→ " + d.resolved_ip;
+
+            gid("verdictBanner").style.borderLeftColor = c.border;
+            gid("verdictIcon").textContent = c.icon;
+            gid("verdictText").textContent = verdict;
+            gid("verdictText").style.color = c.border;
+            gid("verdictSub").textContent = "Risk: " + (d.risk || "Low") + " · " + (d.domain || "");
+
+            var tt = d.threat_type || "";
+            if (tt && tt !== "Unknown" && tt !== "None" && tt !== "Clean") {
+                var badgeEl = gid("threatTypeBadge");
+                var cls = verdict === "Malicious" ? "threat-badge-malicious" : verdict === "Suspicious" ? "threat-badge-suspicious" : "threat-badge-clean";
+                var icon = tt.toLowerCase().indexOf("ransom") >= 0 ? "🔒" : tt.toLowerCase().indexOf("phish") >= 0 ? "🎣" : tt.toLowerCase().indexOf("malware") >= 0 ? "🦠" : tt.toLowerCase().indexOf("trojan") >= 0 ? "🐴" : tt.toLowerCase().indexOf("social") >= 0 ? "🎭" : tt.toLowerCase().indexOf("unwanted") >= 0 ? "⚠️" : tt.toLowerCase().indexOf("c2") >= 0 ? "📡" : "☠️";
+                badgeEl.innerHTML = "<span class='threat-type-badge " + cls + "'>" + icon + " " + esc(tt) + "</span>";
+                badgeEl.style.display = "inline";
+            }
+
+            var score = d.threat_score || 0;
+            gid("threatScore").textContent = score;
+            gid("threatScore").style.color = c.score;
+            setTimeout(function() {
+                gid("threatBar").style.width = score + "%";
+                gid("threatBar").style.background = c.score;
+            }, 100);
+
+            renderEngineChips(engines);
+            renderVT(engines.virustotal || {});
+            renderDB(engines.local_db || {});
+            renderGSB(engines.google_sb || {});
+            renderLexical(engines.lexical || {});
+            renderSSL(engines.ssl || {});
+            renderURLScan(engines.urlscan || {});
+            renderWHOIS(engines.whois || {});
+            renderOTX(engines.otx || {});
+            renderDNS(engines.dns || {});
+            renderFlags(d.flags || []);
+
+            window._reconTarget = d.input || d.url || d.domain || "";
+        }
+
+        /* ══ ENGINE CHIPS ══ */
+        function renderEngineChips(engines) {
+            var defs = [{
+                key: "local_db",
+                label: "Local DB",
+                icon: "🗄️"
+            }, {
+                key: "virustotal",
+                label: "VirusTotal",
+                icon: "🛡️"
+            }, {
+                key: "google_sb",
+                label: "Google SB",
+                icon: "🔵"
+            }, {
+                key: "lexical",
+                label: "Lexical",
+                icon: "🔍"
+            }, {
+                key: "ssl",
+                label: "SSL",
+                icon: "🔒"
+            }, {
+                key: "urlscan",
+                label: "URLScan.io",
+                icon: "🔎"
+            }, {
+                key: "whois",
+                label: "WHOIS",
+                icon: "🌐"
+            }, {
+                key: "otx",
+                label: "OTX",
+                icon: "📡"
+            }, {
+                key: "dns",
+                label: "DNS Intel",
+                icon: "🔎"
+            }];
+            var vColors = {
+                Malicious: "#ff4444",
+                Suspicious: "#ff8800",
+                Clean: "#00c853"
+            };
+            gid("enginesGrid").innerHTML = defs.map(function(def) {
+                var eng = engines[def.key] || {};
+                var status = eng.status || "unavailable";
+                var v;
+                if (status === "unavailable" || status === "error") v = "N/A";
+                else if (status === "not_found" || status === "clean") v = "Clean";
+                else if (status === "not_applicable") v = "N/A";
+                else if (status === "found") v = eng.verdict || "Malicious";
+                else v = eng.verdict || "—";
+                var color = vColors[v] || "#888";
+                var sub = "";
+                if (def.key === "virustotal" && eng.detections) sub = "<small style='color:#aaa'>" + esc(eng.detections) + "</small>";
+                if (def.key === "urlscan" && eng.score !== undefined) sub = "<small style='color:#aaa'>Score: " + eng.score + "</small>";
+                if (def.key === "otx" && eng.pulse_count) sub = "<small style='color:#aaa'>" + eng.pulse_count + " pulse(s)</small>";
+                if (def.key === "whois" && eng.domain_age_days !== undefined && eng.domain_age_days !== null) sub = "<small style='color:#aaa'>Age: " + eng.domain_age_days + "d</small>";
+                if (def.key === "lexical" && eng.score !== undefined) sub = "<small style='color:#aaa'>Score: " + eng.score + "</small>";
+                if (def.key === "ssl" && eng.cert && eng.cert.days_left !== undefined) sub = "<small style='color:#aaa'>" + eng.cert.days_left + "d left</small>";
+                if (def.key === "google_sb" && eng.threat_label) sub = "<small style='color:#aaa'>" + esc(eng.threat_label) + "</small>";
+                if (def.key === "dns" && eng.ip_count !== undefined) sub = "<small style='color:#aaa'>" + eng.ip_count + " IP(s)</small>";
+                return "<div class='engine-chip' style='border-color:" + color + "44'><span class='engine-name'>" + def.icon + " " + def.label + "</span><span class='engine-verdict' style='color:" + color + "'>" + esc(v) + "</span>" + sub + "</div>";
+            }).join("");
+        }
+
+        /* ══ VIRUSTOTAL ══ */
+        var vtAllRows = [];
+
+        function renderVT(vt) {
+            if (!vt || vt.status === "unavailable" || vt.status === "pending") return;
+            showEl("vtCard");
+            var mal = vt.malicious || 0,
+                sus = vt.suspicious || 0,
+                und = vt.undetected || 0,
+                tot = vt.total_engines || 0;
+            gid("vtStats").innerHTML = "<span class='vt-stat malicious'>🔴 " + mal + " Malicious</span><span class='vt-stat suspicious'>🟠 " + sus + " Suspicious</span><span class='vt-stat undetected'>🟢 " + und + " Clean</span><span class='vt-stat total'>📊 " + tot + " Total</span>";
+            vtAllRows = vt.vendor_table || [];
+            drawVTTable(vtAllRows);
+            if (vt.tags && vt.tags.length) gid("vtUrlTags").innerHTML = vt.tags.map(function(t) {
+                return "<span class='vt-tag'>" + esc(t) + "</span>";
+            }).join("");
+            var meta = "";
+            if (vt.title) meta += "<div style='font-size:0.85rem;color:#aaa;margin-top:8px'>Page title: <strong>" + esc(vt.title) + "</strong></div>";
+            if (vt.final_url && vt.final_url !== vt.url) meta += "<div style='font-size:0.82rem;color:#888;margin-top:4px'>Final URL: <span class='mono' style='font-size:0.8rem'>" + esc(vt.final_url) + "</span></div>";
+            gid("vtUrlMeta").innerHTML = meta;
+        }
+
+        function drawVTTable(rows) {
+            if (!rows || !rows.length) {
+                gid("vtUrlTableBody").innerHTML = "<tr><td colspan='3' style='text-align:center;color:#888;padding:20px'>No vendor data available</td></tr>";
+                return;
+            }
+            gid("vtUrlTableBody").innerHTML = rows.map(function(r) {
+                var cat = (r.category || "undetected").toLowerCase();
+                var cls = cat === "malicious" ? "vt-row-malicious" : (cat === "suspicious" || cat === "phishing") ? "vt-row-suspicious" : "";
+                var badge = cat === "malicious" ? "<span style='color:#ff4444;font-weight:700'>🔴 Malicious</span>" : cat === "suspicious" ? "<span style='color:#ff8800;font-weight:700'>🟠 Suspicious</span>" : cat === "phishing" ? "<span style='color:#ff6b35;font-weight:700'>🎣 Phishing</span>" : "<span style='color:#00c853'>🟢 Clean</span>";
+                return "<tr class='vt-row " + cls + "'><td class='vendor-name'>" + esc(r.vendor) + "</td><td>" + badge + "</td><td class='vt-threat-name'>" + esc(r.result || "—") + "</td></tr>";
+            }).join("");
+        }
+
+        function filterVTUrl(cat, btn) {
+            document.querySelectorAll(".vt-filter-btn").forEach(function(b) {
+                b.classList.remove("active");
+            });
+            btn.classList.add("active");
+            drawVTTable(cat === "all" ? vtAllRows : vtAllRows.filter(function(r) {
+                return r.category === cat;
+            }));
+        }
+
+        /* ══ LOCAL DB ══ */
+        function renderDB(db) {
+            showEl("dbCard");
+            var hdr = document.querySelector("#dbCard .vt-header h3");
+            var bdg = document.querySelector("#dbCard .vt-header span");
+            if (db && db.status === "found") {
+                if (hdr) hdr.textContent = "🗄️ Local Threat Database — Match Found";
+                if (bdg) {
+                    bdg.textContent = "☠️ BLACKLISTED";
+                    bdg.style.color = "#ff4444";
+                }
+                gid("dbDetails").innerHTML = "<table class='info-table'>" +
+                    "<tr><td>URL</td><td class='mono' style='font-size:0.8rem'>" + esc(db.url) + "</td></tr>" +
+                    "<tr><td>Domain</td><td>" + esc(db.domain) + "</td></tr>" +
+                    "<tr><td>Category</td><td style='color:#ff4444;font-weight:600'>" + esc(db.category) + "</td></tr>" +
+                    "<tr><td>Threat Type</td><td>" + esc(db.threat) + "</td></tr>" +
+                    "<tr><td>Source</td><td>" + esc(db.source) + "</td></tr>" +
+                    (db.date_added ? "<tr><td>First Seen</td><td>" + esc(db.date_added) + "</td></tr>" : "") +
+                    "</table>";
+            } else {
+                if (hdr) hdr.textContent = "🗄️ Local Threat Database";
+                if (bdg) {
+                    bdg.textContent = "✅ Not Blacklisted";
+                    bdg.style.color = "#00c853";
+                }
+                gid("dbDetails").innerHTML = "<div style='color:#888;font-size:0.88rem;padding:6px 0'>Not found in local malicious URL database (72,000+ URLhaus entries checked).<br><small style='color:#555;margin-top:4px;display:block'>Source: URLhaus — known malware distribution URLs</small></div>";
+            }
+        }
+
+        /* ══ GOOGLE SAFE BROWSING ══ */
+        function renderGSB(gsb) {
+            if (!gsb || gsb.status === "unavailable") return;
+            showEl("gsbCard");
+            if (gsb.status === "clean" || gsb.status === "not_found") {
+                gid("gsbVerdict").innerHTML = "<span style='color:#00c853;font-weight:700'>✅ Not Listed</span>";
+                gid("gsbThreatType").textContent = "Not in Google threat database";
+                gid("gsbPlatform").textContent = "—";
+                gid("gsbMatches").textContent = "0";
+                return;
+            }
+            var color = gsb.threat_color || "#ff4444";
+            gid("gsbVerdict").innerHTML = "<span style='color:" + color + ";font-weight:700'>" + (gsb.threat_icon || "☠️") + " " + esc(gsb.threat_label || "Threat Detected") + "</span>";
+            gid("gsbThreatType").innerHTML = "<span style='color:" + color + ";font-weight:600'>" + esc(gsb.threat_label || "—") + "</span>";
+            gid("gsbPlatform").textContent = gsb.platform || "—";
+            gid("gsbMatches").textContent = gsb.total_matches || 1;
+            if (gsb.matches && gsb.matches.length > 1) gid("gsbMatchList").innerHTML = gsb.matches.map(function(m) {
+                return "<div style='font-size:0.83rem;padding:4px 0;border-bottom:1px solid rgba(128,128,128,0.1)'><span style='color:" + (m.threat_color || color) + "'>" + (m.threat_icon || "⚠️") + " " + esc(m.threat_label) + "</span><span style='color:#888;margin-left:8px'>" + esc(m.platform) + "</span></div>";
+            }).join("");
+        }
+
+        /* ══ LEXICAL ANALYSIS ══ */
+        function renderLexical(lex) {
+            if (!lex || lex.status === "unavailable") return;
+            showEl("lexicalCard");
+            var score = lex.score || 0;
+            var color = score >= 60 ? "#ff4444" : score >= 30 ? "#ff8800" : "#00c853";
+            var vtext = lex.verdict || (score >= 60 ? "Malicious" : score >= 30 ? "Suspicious" : "Clean");
+            gid("lexicalVerdict").innerHTML = "<span style='color:" + color + ";font-weight:700'>" + esc(vtext) + "</span>";
+            gid("lexThreatType").innerHTML = "<span style='color:" + color + "'>" + esc(lex.threat_type || "None") + "</span>";
+            gid("lexRiskLevel").textContent = lex.risk_level || "Low";
+            gid("lexScore").innerHTML = "<span style='color:" + color + ";font-weight:700'>" + score + "/100</span>";
+            if (lex.flags && lex.flags.length) gid("lexFlags").innerHTML = "<div style='font-size:0.82rem;color:#aaa;margin-bottom:6px'>Detected patterns:</div>" + lex.flags.map(function(f) {
+                return "<div class='flag-item' style='border-left-color:" + color + ";font-size:0.83rem'>" + esc(f) + "</div>";
+            }).join("");
+            else gid("lexFlags").innerHTML = "<div style='color:#888;font-size:0.83rem'>No suspicious patterns found in URL structure.</div>";
+        }
+
+        /* ══ SSL CERTIFICATE ══ */
+        function renderSSL(ssl) {
+            if (!ssl || ssl.status === "unavailable" || ssl.status === "not_applicable") return;
+            showEl("sslCard");
+            var score = ssl.score || 0;
+            var color = score >= 50 ? "#ff4444" : score >= 20 ? "#ff8800" : "#00c853";
+            gid("sslVerdict").innerHTML = "<span style='color:" + color + ";font-weight:700'>" + esc(ssl.verdict || "Clean") + "</span>";
+            var cert = ssl.cert || {};
+            gid("sslHas").innerHTML = ssl.has_ssl ? "<span style='color:#00c853'>✅ Yes — HTTPS enabled</span>" : "<span style='color:#ff8800'>⚠️ No SSL/HTTPS</span>";
+            gid("sslIssuer").textContent = cert.issuer || "—";
+            gid("sslFrom").textContent = cert.valid_from || "—";
+            gid("sslTo").textContent = cert.valid_to || "—";
+            gid("sslDays").innerHTML = cert.days_left !== undefined ? "<span style='color:" + (cert.days_left < 14 ? "#ff4444" : "#00c853") + "'>" + cert.days_left + " days</span>" : "—";
+            gid("sslAge").textContent = cert.cert_age_days !== undefined ? cert.cert_age_days + " days old" : "—";
+            if (ssl.flags && ssl.flags.length) gid("sslFlags").innerHTML = ssl.flags.map(function(f) {
+                return "<div class='flag-item' style='border-left-color:" + color + ";font-size:0.83rem'>" + esc(f) + "</div>";
+            }).join("");
+            else gid("sslFlags").innerHTML = "<div style='color:#888;font-size:0.83rem'>Certificate appears valid. No SSL issues detected.</div>";
+        }
+
+        /* ══ URLSCAN.IO ══ */
+        function renderURLScan(us) {
+            if (!us || us.status === "unavailable") return;
+            showEl("urlscanCard");
+            if (us.status === "not_found") {
+                gid("urlscanVerdict").innerHTML = "<span style='color:#888'>No previous scan found</span>";
+                gid("usTitle").textContent = "—";
+                gid("usIp").textContent = "—";
+                gid("usCountry").textContent = "—";
+                gid("usServer").textContent = "—";
+                gid("usAsn").textContent = "—";
+                gid("urlscanLink").innerHTML = "<small style='color:#666'>No URLScan.io data. Add URLSCAN_API_KEY to .env for live scanning.</small>";
+                return;
+            }
+            var vc = us.malicious ? "#ff4444" : us.suspicious ? "#ff8800" : "#00c853";
+            var vt2 = us.malicious ? "☠️ Malicious" : us.suspicious ? "⚠️ Suspicious" : "✅ Clean";
+            gid("urlscanVerdict").innerHTML = "<span style='color:" + vc + ";font-weight:700'>" + vt2 + "</span>" + (us.score ? "<span style='color:#888;font-size:0.82rem;margin-left:8px'>Score: " + us.score + "</span>" : "");
+            gid("usTitle").textContent = us.page_title || "—";
+            gid("usIp").textContent = us.ip || "—";
+            gid("usCountry").textContent = us.country || "—";
+            gid("usServer").textContent = us.server || "—";
+            gid("usAsn").textContent = us.asn || "—";
+            if (us.screenshot) gid("urlscanScreenshot").innerHTML = "<div class='screenshot-wrap'><img src='" + esc(us.screenshot) + "' alt='Screenshot' loading='lazy' onerror='this.parentElement.style.display=\"none\"'></div>";
+            if (us.tags && us.tags.length) gid("urlscanTags").innerHTML = us.tags.map(function(t) {
+                return "<span class='vt-tag'>" + esc(t) + "</span>";
+            }).join("");
+            if (us.report_url) gid("urlscanLink").innerHTML = "<a href='" + esc(us.report_url) + "' target='_blank' rel='noopener' style='color:#90caf9;font-size:0.85rem'>🔗 View full URLScan.io report →</a>";
+        }
+
+        /* ══ WHOIS ══ */
+        function renderWHOIS(w) {
+            if (!w) return;
+            showEl("whoisCard");
+            if (!w.status || ["unavailable", "parse_error", "error", "not_found"].includes(w.status)) {
+                gid("wDomain").textContent = "—";
+                gid("wRegistrar").textContent = "—";
+                gid("wAge").textContent = "—";
+                gid("wPrivacy").textContent = "—";
+                gid("whoisWarning").innerHTML = "<div style='color:#888;font-size:0.85rem;margin-top:8px'>WHOIS lookup unavailable. " + (w.error ? "(" + w.error + ")" : "") + "</div>";
+                return;
+            }
+            gid("wDomain").textContent = w.domain || "—";
+            gid("wRegistrar").textContent = w.registrar || "Unknown";
+            if (w.domain_age_days !== undefined && w.domain_age_days !== null) {
+                var ageText = w.domain_age_days < 30 ? w.domain_age_days + " days" : w.domain_age_days < 365 ? Math.floor(w.domain_age_days / 30) + " months" : Math.floor(w.domain_age_days / 365) + " years";
+                var ageColor = w.newly_registered ? "#ff4444" : "#00c853";
+                gid("wAge").innerHTML = "<span style='color:" + ageColor + ";font-weight:600'>" + ageText + "</span>" + (w.newly_registered ? "<span class='risk-badge risk-HIGH'>New Domain</span>" : "");
+            } else {
+                gid("wAge").textContent = "—";
+            }
+            gid("wPrivacy").innerHTML = w.privacy_protected ? "<span style='color:#ff8800'>🔒 Hidden (Privacy Protected)</span>" : "<span style='color:#00c853'>✅ Public</span>";
+            gid("whoisTimeline").innerHTML = [{
+                label: "Registered",
+                date: w.created
+            }, {
+                label: "Updated",
+                date: w.updated
+            }, {
+                label: "Expires",
+                date: w.expires
+            }].map(function(e) {
+                return "<div class='whois-event'><div class='whois-event-label'>" + e.label + "</div><div class='whois-event-date'>" + (e.date || "—") + "</div></div>";
+            }).join("");
+            if (w.nameservers && w.nameservers.length) gid("nsChips").innerHTML = "<div style='font-size:0.78rem;color:#888;margin-bottom:6px;width:100%;margin-top:12px'>Nameservers:</div>" + w.nameservers.map(function(ns) {
+                return "<span class='ns-chip'>" + esc(ns) + "</span>";
+            }).join("");
+            var warn = "";
+            if (w.newly_registered) warn += "<div class='domain-warning'>⚠️ <strong>Newly registered domain</strong> — under 90 days old, common in phishing</div>";
+            if (w.privacy_protected) warn += "<div class='domain-warning' style='margin-top:8px'>🔒 <strong>Registrant identity hidden</strong></div>";
+            gid("whoisWarning").innerHTML = warn;
+        }
+
+        /* ══ ALIENVAULT OTX ══ */
+        function renderOTX(otx) {
+            if (!otx || !otx.pulse_count) return;
+            showEl("otxCard");
+            gid("otxStats").innerHTML = "<span class='vt-stat malicious'>📡 " + otx.pulse_count + " Pulse(s)</span>";
+            var meta = "";
+            if (otx.malware_families && otx.malware_families.length) meta += "<div class='vt-tags'>" + otx.malware_families.map(function(f) {
+                return "<span class='vt-tag' style='background:rgba(255,68,68,0.1);color:#ff8888;border-color:rgba(255,68,68,0.3)'>" + esc(f) + "</span>";
+            }).join("") + "</div>";
+            if (otx.adversaries && otx.adversaries.length) meta += "<div style='margin-top:8px;font-size:0.85rem;color:#aaa'>Adversaries: " + otx.adversaries.map(function(a) {
+                return "<strong style='color:#ff8800'>" + esc(a) + "</strong>";
+            }).join(", ") + "</div>";
+            if (otx.tags && otx.tags.length) meta += "<div class='vt-tags' style='margin-top:8px'>" + otx.tags.map(function(t) {
+                return "<span class='vt-tag'>" + esc(t) + "</span>";
+            }).join("") + "</div>";
+            gid("otxMeta").innerHTML = meta;
+            if (otx.pulses && otx.pulses.length) gid("otxPulses").innerHTML = otx.pulses.map(function(p) {
+                return "<div class='pulse-row'><div class='pulse-name'>" + esc(p.name) + "</div><div class='pulse-meta'>By " + esc(p.author) + " · " + esc(p.created) + (p.tags && p.tags.length ? " · " + p.tags.map(function(t) {
+                    return "<span class='ha-tag'>" + esc(t) + "</span>";
+                }).join("") : "") + "</div></div>";
+            }).join("");
+        }
+
+        /* ══ DNS INTELLIGENCE ══ */
+        function renderDNS(dns) {
+            if (!dns || dns.status === "unavailable" || dns.status === "not_applicable" || dns.status === "not_found") return;
+            showEl("dnsCard");
+            var score = dns.risk_score || 0;
+            var color = score >= 60 ? "#ff4444" : score >= 25 ? "#ff8800" : "#00c853";
+            var verdict = dns.verdict || "Clean";
+            var bdg = gid("dnsBadge");
+            if (bdg) {
+                bdg.textContent = dns.source || "DNS";
+                bdg.style.color = color;
+            }
+            var html = "";
+            html += "<div style='display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px'>";
+            html += "<div><div style='font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Verdict</div><span style='color:" + color + ";font-weight:700;font-size:0.95rem'>" + esc(verdict) + "</span></div>";
+            html += "<div><div style='font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Risk Score</div><span style='color:" + color + ";font-weight:700'>" + score + "/100</span></div>";
+            html += "<div><div style='font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>IPs</div><span style='font-weight:600;color:#d1d5db'>" + (dns.ip_count || 0) + (dns.fast_flux ? " <span style='color:#ff8800;font-size:0.75rem'>⚠️ Fast-flux</span>" : "") + "</span></div>";
+            html += "<div><div style='font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>IPv6</div><span style='font-weight:600;color:#d1d5db'>" + (dns.has_ipv6 ? "✅ Yes" : "—") + "</span></div>";
+            html += "<div><div style='font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px'>Mail</div><span style='font-weight:600;color:#d1d5db'>" + (dns.has_mail ? "✅ Yes" : "None") + "</span></div>";
+            html += "</div>";
+            if (dns.a_records && dns.a_records.length) html += "<div style='margin-bottom:14px'><div style='font-size:0.78rem;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>A Records (IPv4)</div><div style='display:flex;gap:8px;flex-wrap:wrap'>" + dns.a_records.map(function(ip) {
+                return "<code style='font-size:0.8rem;background:rgba(96,165,250,0.1);color:#60a5fa;padding:3px 10px;border-radius:6px;border:1px solid rgba(96,165,250,0.2)'>" + esc(ip) + "</code>";
+            }).join("") + "</div></div>";
+            if (dns.mx_records && dns.mx_records.length) html += "<div style='margin-bottom:14px'><div style='font-size:0.78rem;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>MX Records (Mail Servers)</div><div style='display:flex;flex-direction:column;gap:4px'>" + dns.mx_records.map(function(mx) {
+                return "<div style='font-size:0.83rem;color:#d1d5db'>Priority <strong>" + esc(mx.priority || "") + "</strong> → <code style='color:#a78bfa'>" + esc(mx.host || "") + "</code></div>";
+            }).join("") + "</div></div>";
+            if (dns.ns_records && dns.ns_records.length) html += "<div style='margin-bottom:14px'><div style='font-size:0.78rem;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>Nameservers</div><div style='display:flex;gap:8px;flex-wrap:wrap'>" + dns.ns_records.map(function(ns) {
+                return "<code style='font-size:0.8rem;background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 10px;border-radius:6px;border:1px solid rgba(167,139,250,0.2)'>" + esc(ns) + "</code>";
+            }).join("") + "</div></div>";
+            var spf = dns.spf || {},
+                dmarc = dns.dmarc || {};
+            var spfColor = spf.exists ? (spf.secure ? "#00c853" : "#ff8800") : "#ff4444";
+            var dmarcColor = dmarc.exists ? (dmarc.secure ? "#00c853" : "#ff8800") : "#ff4444";
+            html += "<div style='margin-bottom:14px'><div style='font-size:0.78rem;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em'>Email Security</div><div style='display:flex;gap:12px;flex-wrap:wrap'>";
+            html += "<div style='padding:8px 14px;border-radius:8px;border:1px solid " + spfColor + "44;background:" + spfColor + "11'><span style='color:" + spfColor + ";font-weight:600;font-size:0.85rem'>" + (spf.exists ? (spf.secure ? "✅ SPF (strict)" : "⚠️ SPF (soft-fail)") : "❌ No SPF") + "</span></div>";
+            html += "<div style='padding:8px 14px;border-radius:8px;border:1px solid " + dmarcColor + "44;background:" + dmarcColor + "11'><span style='color:" + dmarcColor + ";font-weight:600;font-size:0.85rem'>" + (dmarc.exists ? (dmarc.secure ? "✅ DMARC (" + dmarc.policy + ")" : "⚠️ DMARC (" + dmarc.policy + ")") : "❌ No DMARC") + "</span></div>";
+            html += "</div></div>";
+            if (dns.flags && dns.flags.length) html += "<div><div style='font-size:0.78rem;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em'>Risk Indicators</div>" + dns.flags.map(function(f) {
+                return "<div style='border-left:3px solid #ff8800;padding:8px 14px;margin-bottom:6px;background:rgba(255,136,0,0.05);border-radius:0 8px 8px 0;font-size:0.83rem;color:#d1d5db'>" + esc(f) + "</div>";
+            }).join("") + "</div>";
+            gid("dnsContent").innerHTML = html;
+        }
+
+        /* ══ DETECTION FLAGS ══ */
+        function renderFlags(flags) {
+            if (!flags || !flags.length) return;
+            showEl("flagsCard");
+            gid("flagsList").innerHTML = flags.map(function(f) {
+                var color = (f.indexOf("[Local DB]") >= 0 || f.indexOf("malicious") >= 0) ? "#ff4444" : (f.indexOf("Suspicious") >= 0 || f.indexOf("newly") >= 0) ? "#ff8800" : "#ffaa00";
+                return "<div class='flag-item' style='border-left-color:" + color + "'>" + esc(f) + "</div>";
+            }).join("");
+        }
+
+        /* ══ DEEP RECON ANALYSIS ══ */
+        var API_BASE = "http://127.0.0.1:5000";
+
+        async function runRecon() {
+            var target = window._reconTarget || "";
+            if (!target) {
+                alert("No target found. Please scan a URL first.");
+                return;
+            }
+            var btn = gid("reconBtn");
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = "⏳ Running recon...";
+            }
+            var section = gid("reconResultSection");
+            section.style.display = "block";
+            section.innerHTML = "<div style='text-align:center;padding:30px;color:#6b7280'><div style='font-size:2rem;margin-bottom:12px'>🔍</div><p style='font-size:0.95rem;color:#9ca3af;margin-bottom:6px'>Scanning ports · grabbing banners · geolocating IP...</p><p style='font-size:0.82rem'>Target: <code style='color:#2dd4bf'>" + esc(target) + "</code></p><div style='margin-top:16px;height:3px;background:rgba(20,184,166,0.15);border-radius:2px;overflow:hidden'><div style='height:100%;background:#2dd4bf;border-radius:2px;animation:reconProgress 15s linear forwards'></div></div><style>@keyframes reconProgress{from{width:0}to{width:100%}}</style></div>";
+            try {
+                var controller = new AbortController();
+                var tid = setTimeout(function() {
+                    controller.abort();
+                }, 60000);
+                var res = await fetch(API_BASE + "/api/scan/recon", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        target: target
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(tid);
+                var data = await res.json();
+                if (data.success) {
+                    renderReconResults(data.result);
+                } else {
+                    section.innerHTML = "<div style='padding:16px;color:#ff4444;background:rgba(255,68,68,0.06);border-radius:8px;border:1px solid rgba(255,68,68,0.2)'>❌ " + esc(data.message || "Recon failed.") + "</div>";
+                }
+            } catch (err) {
+                section.innerHTML = err.name === "AbortError" ?
+                    "<div style='padding:16px;color:#ff8800;background:rgba(255,136,0,0.06);border-radius:8px'>⏱️ Recon timed out. Try again.</div>" :
+                    "<div style='padding:16px;color:#ff4444;background:rgba(255,68,68,0.06);border-radius:8px'>❌ " + esc(err.message) + "</div>";
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = "🕵️ Run Deep Recon";
+                }
+            }
+        }
+
+        function renderReconResults(r) {
+            var section = gid("reconResultSection");
+            if (!section) return;
+
+            // ── FIX: Update chatbot context with recon results ──
+            try {
+                if (window.scanCtx) {
+                    window.scanCtx.recon = {
+                        threat_score: r.threat_score,
+                        threat_level: r.threat_level,
+                        resolved_ip: r.resolved_ip,
+                        open_ports: (r.open_ports || []).map(function(p) {
+                            return p.port + "/" + p.service;
+                        }),
+                        flags: r.flags,
+                        mitre_tags: r.mitre_tags,
+                        ip_intel: r.ip_intel
+                    };
+                }
+            } catch (e) {}
+
+            var levelColors = {
+                "HIGH": "#ff4444",
+                "MEDIUM": "#ff9900",
+                "LOW": "#ffcc00",
+                "CLEAN": "#00cc66",
+                "UNKNOWN": "#888888"
+            };
+            var color = levelColors[r.threat_level] || "#888";
+            var intel = r.ip_intel || {};
+            var intelRows = [
+                ["Resolved IP", r.resolved_ip || "—"],
+                ["Country", (intel.country || "—") + (intel.city ? ", " + intel.city : "")],
+                ["Organization", intel.org || "—"],
+                ["ASN", intel.asn || "—"],
+                ["ISP", intel.isp || "—"],
+                ["Reverse DNS", r.reverse_dns || "—"],
+                ["Proxy / VPN", intel.is_proxy ? "⚠️ Yes" : "✅ No"],
+                ["Datacenter", intel.is_datacenter ? "⚠️ Yes (cloud/hosting)" : "✅ No"],
+            ].map(function(row) {
+                return "<tr><td style='color:#6b7280;font-size:0.82rem;width:140px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + esc(row[0]) + "</td><td style='color:#d1d5db;font-size:0.82rem;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + esc(row[1]) + "</td></tr>";
+            }).join("");
+
+            var portsHtml = "";
+            if (r.open_ports && r.open_ports.length) {
+                portsHtml = "<table class='recon-table'><thead><tr><th>Port</th><th>Service</th><th>Banner</th><th>Risk</th></tr></thead><tbody>" +
+                    r.open_ports.map(function(p) {
+                        var SUSPICIOUS_PORTS = [23, 135, 139, 445, 1723, 3389, 5900, 3306];
+                        var isSus = SUSPICIOUS_PORTS.indexOf(p.port) >= 0;
+                        return "<tr><td><code style='color:" + (isSus ? "#ff8800" : "#60a5fa") + ";font-weight:700'>" + p.port + "</code></td><td style='color:#d1d5db'>" + esc(p.service) + "</td><td style='color:#6b7280;font-size:0.78rem;font-family:monospace'>" + esc(p.banner || "—") + "</td><td>" + (isSus ? "<span style='color:#ff8800;font-size:0.75rem;font-weight:700'>⚠️ RISKY</span>" : "<span style='color:#00c853;font-size:0.75rem'>✅ OK</span>") + "</td></tr>";
+                    }).join("") +
+                    "</tbody></table>";
+            } else {
+                portsHtml = "<div style='color:#555;font-size:0.85rem;padding:8px 0'>No open ports detected in top 20 scan.</div>";
+            }
+
+            var flagsHtml = (r.flags || []).map(function(f) {
+                return "<div style='padding:8px 12px;margin-bottom:6px;background:rgba(255,136,0,0.08);border-left:3px solid #ff8800;border-radius:6px;color:#ffaa44;font-size:0.85rem'>⚠️ " + esc(f) + "</div>";
+            }).join("") || "<div style='color:#555;font-size:0.85rem;padding:8px 0'>No suspicious indicators detected.</div>";
+            var mitreHtml = (r.mitre_tags || []).map(function(t) {
+                return "<span style='display:inline-block;padding:4px 12px;margin:4px;border-radius:20px;background:rgba(255,68,68,0.1);color:#ff8888;border:1px solid rgba(255,68,68,0.2);font-size:0.78rem;font-weight:700'>" + esc(t.id) + " — " + esc(t.name) + "</span>";
+            }).join("") || "<span style='color:#555;font-size:0.85rem'>None detected</span>";
+
+            var whoisR = r.whois || {};
+            var whoisHtml = "";
+            if (whoisR.status === "found") {
+                var ageDays = whoisR.domain_age_days;
+                var ageStr = ageDays !== undefined && ageDays !== null ? (ageDays < 30 ? ageDays + " days" : ageDays < 365 ? Math.floor(ageDays / 30) + " months" : Math.floor(ageDays / 365) + " years") : "—";
+                whoisHtml = "<table class='recon-table' style='margin-top:8px'><tr><td style='color:#6b7280;font-size:0.82rem;width:140px;padding:7px 10px'>Registrar</td><td style='color:#d1d5db;font-size:0.82rem;padding:7px 10px'>" + esc(whoisR.registrar || "—") + "</td></tr><tr><td style='color:#6b7280;font-size:0.82rem;padding:7px 10px'>Domain Age</td><td style='color:" + (whoisR.newly_registered ? "#ff4444" : "#00c853") + ";font-size:0.82rem;font-weight:600;padding:7px 10px'>" + ageStr + (whoisR.newly_registered ? " ⚠️ Newly registered" : "") + "</td></tr><tr><td style='color:#6b7280;font-size:0.82rem;padding:7px 10px'>Registered</td><td style='color:#d1d5db;font-size:0.82rem;padding:7px 10px'>" + esc(whoisR.created || "—") + "</td></tr><tr><td style='color:#6b7280;font-size:0.82rem;padding:7px 10px'>Expires</td><td style='color:#d1d5db;font-size:0.82rem;padding:7px 10px'>" + esc(whoisR.expires || "—") + "</td></tr><tr><td style='color:#6b7280;font-size:0.82rem;padding:7px 10px'>Privacy</td><td style='font-size:0.82rem;padding:7px 10px'>" + (whoisR.privacy_protected ? "<span style='color:#ff8800'>🔒 Protected</span>" : "<span style='color:#00c853'>✅ Public</span>") + "</td></tr></table>";
+            }
+
+            section.innerHTML =
+                "<div style='display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:4px solid " + color + "'><div style='font-size:2.8rem;font-weight:900;color:" + color + ";min-width:70px;text-align:center;line-height:1'>" + (r.threat_score || 0) + "</div><div><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Recon Threat Score</div><span style='padding:4px 16px;border-radius:20px;font-weight:800;font-size:0.85rem;background:" + color + "22;color:" + color + ";border:1px solid " + color + "44'>" + esc(r.threat_level || "UNKNOWN") + "</span><div style='font-size:0.78rem;color:#555;margin-top:8px'>🔍 " + (r.port_count || 0) + " open ports · scan completed in " + (r.duration_seconds || 0) + "s</div></div></div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🌍 IP Intelligence</div><table class='recon-table'><tbody>" + intelRows + "</tbody></table></div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🔌 Open Ports (" + (r.port_count || 0) + " / 20 scanned)</div>" + portsHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>⚠️ Risk Indicators</div>" + flagsHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🎯 MITRE ATT&CK Techniques</div><div>" + mitreHtml + "</div></div>" +
+                (whoisHtml ? "<div style='margin-bottom:8px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🌐 WHOIS Summary</div>" + whoisHtml + "</div>" : "");
+        }
+
+        /* ══ URL BEHAVIOR ANALYSIS ══ */
+        async function runUrlBehavior() {
+            var target = window._reconTarget || "";
+            if (!target) {
+                alert("No target URL found.");
+                return;
+            }
+            var btn = gid("urlBehaviorBtn");
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = "⏳ Visiting URL... (up to 60s)";
+            }
+            var section = gid("urlBehaviorSection");
+            section.style.display = "block";
+            section.innerHTML = "<div style='text-align:center;padding:30px;color:#6b7280'><div style='font-size:2rem;margin-bottom:12px'>🎭</div><p style='font-size:0.95rem;color:#9ca3af;margin-bottom:6px'>Headless Chrome visiting URL...</p><p style='font-size:0.82rem'>Capturing requests · detecting phishing · taking screenshot</p><div style='margin-top:16px;height:3px;background:rgba(99,102,241,0.15);border-radius:2px;overflow:hidden'><div style='height:100%;background:#818cf8;border-radius:2px;animation:reconProgress 60s linear forwards'></div></div></div>";
+            try {
+                var controller = new AbortController();
+                var tid = setTimeout(function() {
+                    controller.abort();
+                }, 130000);
+                var res = await fetch(API_BASE + "/api/scan/url-behavior", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        target: target
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(tid);
+                var data = await res.json();
+                if (data.success) {
+                    renderUrlBehavior(data.result);
+                } else {
+                    section.innerHTML = "<div style='padding:16px;color:#ff4444;background:rgba(255,68,68,0.06);border-radius:8px;border:1px solid rgba(255,68,68,0.2)'>❌ " + esc(data.message || "Analysis failed.") + "</div>";
+                }
+            } catch (err) {
+                section.innerHTML = err.name === "AbortError" ?
+                    "<div style='padding:16px;color:#ff8800;background:rgba(255,136,0,0.06);border-radius:8px'>⏱️ Timed out. Try again.</div>" :
+                    "<div style='padding:16px;color:#ff4444;background:rgba(255,68,68,0.06);border-radius:8px'>❌ " + esc(err.message) + "</div>";
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = "🌐 Run Live Browser Analysis";
+                }
+            }
+        }
+
+        function renderUrlBehavior(r) {
+            var section = gid("urlBehaviorSection");
+            if (!section) return;
+
+            // ── FIX: Update chatbot context with browser analysis results ──
+            try {
+                if (window.scanCtx) {
+                    window.scanCtx.url_behavior = {
+                        threat_score: r.threat_score,
+                        threat_level: r.threat_level,
+                        final_url: r.final_url,
+                        page_title: r.page_title,
+                        suspicious_indicators: r.suspicious_indicators,
+                        redirects: (r.redirects || []).length,
+                        forms_count: (r.forms || []).length,
+                        network_domains: r.network_domains,
+                        mitre_tags: r.mitre_tags
+                    };
+                }
+            } catch (e) {}
+
+            var levelColors = {
+                "HIGH": "#ff4444",
+                "MEDIUM": "#ff9900",
+                "LOW": "#ffcc00",
+                "CLEAN": "#00cc66",
+                "UNKNOWN": "#888"
+            };
+            var color = levelColors[r.threat_level] || "#888";
+
+            var screenshotHtml = "";
+            if (r.screenshot_b64) screenshotHtml = "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>📸 Page Screenshot</div><img src='data:image/png;base64," + r.screenshot_b64 + "' style='width:100%;border-radius:8px;border:1px solid rgba(255,255,255,0.08)' alt='Page screenshot'></div>";
+
+            var reqTypes = {};
+            (r.http_requests || []).forEach(function(req) {
+                reqTypes[req.resource_type] = (reqTypes[req.resource_type] || 0) + 1;
+            });
+            var reqRows = Object.entries(reqTypes).map(function(e) {
+                return "<tr><td style='color:#9ca3af;font-size:0.82rem;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);text-transform:capitalize'>" + esc(e[0]) + "</td><td style='color:#d1d5db;font-weight:700;font-size:0.82rem;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + e[1] + "</td></tr>";
+            }).join("");
+
+            var redirectsHtml = (r.redirects || []).length ? (r.redirects || []).map(function(rd) {
+                return "<div style='font-size:0.82rem;padding:6px 0;color:#9ca3af;font-family:monospace'><span style='color:#ff8800'>" + rd.status + "</span> " + esc(rd.from) + "</div>";
+            }).join("") : "<div style='color:#555;font-size:0.82rem'>No redirects detected</div>";
+            var domainsHtml = (r.network_domains || []).map(function(d) {
+                return "<code style='font-size:0.78rem;background:rgba(96,165,250,0.1);color:#60a5fa;padding:3px 10px;border-radius:6px;border:1px solid rgba(96,165,250,0.2);margin:3px;display:inline-block'>" + esc(d) + "</code>";
+            }).join("") || "<span style='color:#555;font-size:0.82rem'>None</span>";
+            var formsHtml = (r.forms || []).length ? (r.forms || []).map(function(f) {
+                var hasPassword = (f.inputs || []).some(function(i) {
+                    return i.type === "password";
+                });
+                return "<div style='padding:8px 12px;margin-bottom:6px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid " + (hasPassword ? "#ff4444" : "#ff8800") + "'><div style='font-size:0.82rem;color:#d1d5db'>Action: <code style='color:#60a5fa'>" + esc(f.action || "—") + "</code></div><div style='font-size:0.78rem;color:#6b7280;margin-top:4px'>Method: " + esc(f.method || "—") + " · " + (f.inputs || []).length + " input(s)" + (hasPassword ? " · <span style='color:#ff4444;font-weight:700'>⚠️ Password field</span>" : "") + "</div></div>";
+            }).join("") : "<div style='color:#555;font-size:0.82rem'>No forms detected</div>";
+            var indicatorsHtml = (r.suspicious_indicators || []).map(function(i) {
+                return "<div style='padding:8px 12px;margin-bottom:6px;background:rgba(255,136,0,0.08);border-left:3px solid #ff8800;border-radius:6px;color:#ffaa44;font-size:0.85rem'>⚠️ " + esc(i) + "</div>";
+            }).join("") || "<div style='color:#555;font-size:0.82rem;padding:8px 0'>No suspicious indicators detected</div>";
+            var mitreHtml = (r.mitre_tags || []).map(function(t) {
+                return "<span style='display:inline-block;padding:4px 12px;margin:4px;border-radius:20px;background:rgba(255,68,68,0.1);color:#ff8888;border:1px solid rgba(255,68,68,0.2);font-size:0.78rem;font-weight:700'>" + esc(t.id) + " — " + esc(t.name) + "</span>";
+            }).join("") || "<span style='color:#555;font-size:0.85rem'>None detected</span>";
+            var cookiesHtml = (r.cookies || []).length ?
+                "<table style='width:100%;border-collapse:collapse'><thead><tr><th style='font-size:0.72rem;color:#4b5563;padding:6px 10px;text-align:left'>Name</th><th style='font-size:0.72rem;color:#4b5563;padding:6px 10px;text-align:left'>Domain</th><th style='font-size:0.72rem;color:#4b5563;padding:6px 10px;text-align:left'>Secure</th></tr></thead><tbody>" +
+                (r.cookies || []).map(function(c) {
+                    return "<tr><td style='font-size:0.8rem;color:#d1d5db;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + esc(c.name) + "</td><td style='font-size:0.8rem;color:#9ca3af;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + esc(c.domain) + "</td><td style='font-size:0.8rem;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)'>" + (c.secure ? "<span style='color:#00c853'>✅</span>" : "<span style='color:#ff8800'>⚠️</span>") + "</td></tr>";
+                }).join("") +
+                "</tbody></table>" : "<div style='color:#555;font-size:0.82rem'>No cookies set</div>";
+
+            section.innerHTML =
+                "<div style='display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:4px solid " + color + "'><div style='font-size:2.8rem;font-weight:900;color:" + color + ";min-width:70px;text-align:center;line-height:1'>" + (r.threat_score || 0) + "</div><div><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px'>Browser Analysis Score</div><span style='padding:4px 16px;border-radius:20px;font-weight:800;font-size:0.85rem;background:" + color + "22;color:" + color + ";border:1px solid " + color + "44'>" + esc(r.threat_level || "UNKNOWN") + "</span><div style='font-size:0.78rem;color:#555;margin-top:8px'>🎭 Headless Chrome · " + (r.duration_seconds || 0) + "s · " + (r.http_requests || []).length + " requests captured</div><div style='font-size:0.78rem;color:#6b7280;margin-top:4px'>Final URL: <code style='color:#818cf8'>" + esc(r.final_url || "—") + "</code></div>" + (r.page_title ? "<div style='font-size:0.78rem;color:#6b7280;margin-top:2px'>Page title: <strong style='color:#9ca3af'>" + esc(r.page_title) + "</strong></div>" : "") + "</div></div>" +
+                screenshotHtml +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>⚠️ Suspicious Indicators</div>" + indicatorsHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>📡 HTTP Requests by Type (" + (r.http_requests || []).length + " total)</div><table style='width:100%;border-collapse:collapse;background:rgba(255,255,255,0.02);border-radius:8px;overflow:hidden'><tbody>" + reqRows + "</tbody></table></div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🔀 Redirects (" + (r.redirects || []).length + ")</div>" + redirectsHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>📝 Forms Detected (" + (r.forms || []).length + ")</div>" + formsHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🍪 Cookies (" + (r.cookies || []).length + ")</div>" + cookiesHtml + "</div>" +
+                "<div style='margin-bottom:18px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🌍 Network Domains Contacted (" + (r.network_domains || []).length + ")</div><div>" + domainsHtml + "</div></div>" +
+                "<div style='margin-bottom:8px'><div style='font-size:0.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;font-weight:600'>🎯 MITRE ATT&CK Techniques</div><div>" + mitreHtml + "</div></div>";
+        }
+    </script>
+
+    <!-- ═══ CHATBOT ═══ -->
+    <button id="tlChatBubble" title="Ask ThreatLens AI">🤖<span class="tl-notif" id="tlNotif"></span></button>
+    <div id="tlChatWindow">
+        <div id="tlChatHeader">
+            <div class="tl-avatar">🛡️</div>
+            <div class="tl-hdr-info"><strong>ThreatLens AI</strong><span>● Online</span></div>
+            <button id="tlChatClose">✕</button>
+        </div>
+        <div id="tlChatMessages"></div>
+        <div class="tl-suggestions" id="tlSuggestions"></div>
+        <div id="tlChatInputRow">
+            <textarea id="tlChatInput" rows="1" placeholder="Ask about this scan result…"></textarea>
+            <button id="tlChatSend">➤</button>
+        </div>
+    </div>
+    <style>
+        #tlChatBubble {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 9999;
+            transition: transform 0.2s, box-shadow 0.2s
+        }
+        
+        #tlChatBubble:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 28px rgba(37, 99, 235, 0.65)
+        }
+        
+        #tlChatBubble .tl-notif {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 14px;
+            height: 14px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: none
+        }
+        
+        #tlChatWindow {
+            position: fixed;
+            bottom: 96px;
+            right: 28px;
+            width: 360px;
+            max-height: 520px;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 9998;
+            overflow: hidden;
+            transform: scale(0.92) translateY(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.18s ease
+        }
+        
+        #tlChatWindow.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all
+        }
+        
+        body.light #tlChatWindow {
+            background: #fff;
+            border-color: #e5e7eb
+        }
+        
+        #tlChatHeader {
+            background: linear-gradient(135deg, #1e3a8a, #4c1d95);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0
+        }
+        
+        .tl-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem
+        }
+        
+        .tl-hdr-info {
+            flex: 1
+        }
+        
+        .tl-hdr-info strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #fff;
+            font-weight: 700
+        }
+        
+        .tl-hdr-info span {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.6)
+        }
+        
+        #tlChatClose {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            flex-shrink: 0
+        }
+        
+        #tlChatClose:hover {
+            background: rgba(255, 255, 255, 0.2)
+        }
+        
+        #tlChatMessages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth
+        }
+        
+        #tlChatMessages::-webkit-scrollbar {
+            width: 4px
+        }
+        
+        #tlChatMessages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px
+        }
+        
+        .tl-msg {
+            max-width: 88%;
+            font-size: 0.84rem;
+            line-height: 1.55;
+            padding: 10px 13px;
+            border-radius: 14px;
+            word-wrap: break-word;
+            animation: tlMsgIn 0.2s ease
+        }
+        
+        @keyframes tlMsgIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+        
+        .tl-msg.bot {
+            background: rgba(255, 255, 255, 0.06);
+            color: #d1d5db;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start
+        }
+        
+        body.light .tl-msg.bot {
+            background: #f3f4f6;
+            color: #374151
+        }
+        
+        .tl-msg.user {
+            background: #2563eb;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end
+        }
+        
+        .tl-typing {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            width: fit-content
+        }
+        
+        .tl-dot {
+            width: 7px;
+            height: 7px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: tlBounce 1.2s infinite
+        }
+        
+        .tl-dot:nth-child(2) {
+            animation-delay: 0.2s
+        }
+        
+        .tl-dot:nth-child(3) {
+            animation-delay: 0.4s
+        }
+        
+        @keyframes tlBounce {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0)
+            }
+            30% {
+                transform: translateY(-6px)
+            }
+        }
+        
+        .tl-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px 10px;
+            flex-shrink: 0
+        }
+        
+        .tl-suggestion {
+            font-size: 0.75rem;
+            padding: 5px 11px;
+            border-radius: 20px;
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            background: rgba(37, 99, 235, 0.08);
+            color: #60a5fa;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap
+        }
+        
+        .tl-suggestion:hover {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #2563eb
+        }
+        
+        #tlChatInputRow {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0
+        }
+        
+        #tlChatInput {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.84rem;
+            color: #d1d5db;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            max-height: 80px;
+            transition: border-color 0.15s
+        }
+        
+        body.light #tlChatInput {
+            background: #f9fafb;
+            border-color: #e5e7eb;
+            color: #374151
+        }
+        
+        #tlChatInput:focus {
+            border-color: #2563eb
+        }
+        
+        #tlChatInput::placeholder {
+            color: #6b7280
+        }
+        
+        #tlChatSend {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #2563eb;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            flex-shrink: 0;
+            align-self: flex-end
+        }
+        
+        #tlChatSend:hover {
+            background: #1d4ed8
+        }
+        
+        #tlChatSend:disabled {
+            background: #374151;
+            cursor: not-allowed
+        }
+        
+        @media(max-width:480px) {
+            #tlChatWindow {
+                width: calc(100vw - 24px);
+                right: 12px;
+                bottom: 84px
+            }
+        }
+    </style>
+    <script>
+        (function() {
+            var SCAN_KEY = "urlScanResult",
+                API_ENDPOINT = "http://127.0.0.1:5000/api/chat/ask";
+            var SUGGESTIONS = ["Is this URL dangerous?", "What should I do?", "Explain the verdict", "What threat was detected?", "Which engines flagged it?"];
+            var isOpen = false,
+                isLoading = false;
+            window.scanCtx = null; // FIX: exposed to page scope so recon/behavior can update it
+
+            var bubble = document.getElementById("tlChatBubble"),
+                win = document.getElementById("tlChatWindow"),
+                closeBtn = document.getElementById("tlChatClose"),
+                messages = document.getElementById("tlChatMessages"),
+                input = document.getElementById("tlChatInput"),
+                sendBtn = document.getElementById("tlChatSend"),
+                suggs = document.getElementById("tlSuggestions"),
+                notif = document.getElementById("tlNotif");
+
+            try {
+                var raw = sessionStorage.getItem(SCAN_KEY);
+                if (raw) {
+                    window.scanCtx = JSON.parse(raw);
+                    window.scanCtx.scan_type = "url";
+                }
+            } catch (e) {}
+
+            setTimeout(function() {
+                if (!isOpen) notif.style.display = "block";
+            }, 3000);
+            bubble.addEventListener("click", function() {
+                isOpen = !isOpen;
+                win.classList.toggle("open", isOpen);
+                if (isOpen) {
+                    bubble.textContent = "✕";
+                    bubble.appendChild(notif);
+                    notif.style.display = "none";
+                    if (messages.children.length === 0) showWelcome();
+                    setTimeout(function() {
+                        input.focus();
+                    }, 250);
+                } else {
+                    bubble.textContent = "🤖";
+                    bubble.appendChild(notif);
+                }
+            });
+            closeBtn.addEventListener("click", function() {
+                isOpen = false;
+                win.classList.remove("open");
+                bubble.textContent = "🤖";
+                bubble.appendChild(notif);
+            });
+
+            function showWelcome() {
+                var verdict = window.scanCtx ? window.scanCtx.verdict : null;
+                appendMsg("bot", verdict ? "Hi! I can see this scan returned a <strong style='color:" + verdictColor(verdict) + "'>" + verdict + "</strong> verdict. What would you like to know about it?" : "Hi! I'm ThreatLens AI. Ask me anything about this scan result.");
+                suggs.innerHTML = SUGGESTIONS.map(function(s) {
+                    return "<button class='tl-suggestion' onclick='tlAskSuggestion(\"" + s.replace(/"/g, "&quot;") + "\")'>" + s + "</button>";
+                }).join("");
+            }
+
+            function verdictColor(v) {
+                return v === "Malicious" ? "#ff4444" : v === "Suspicious" ? "#f97316" : "#22c55e";
+            }
+            window.tlAskSuggestion = function(text) {
+                input.value = text;
+                sendMessage();
+            };
+
+            function appendMsg(role, html) {
+                var div = document.createElement("div");
+                div.className = "tl-msg " + role;
+                div.innerHTML = html;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function showTyping() {
+                var div = document.createElement("div");
+                div.className = "tl-typing";
+                div.id = "tlTyping";
+                div.innerHTML = "<div class='tl-dot'></div><div class='tl-dot'></div><div class='tl-dot'></div>";
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function hideTyping() {
+                var t = document.getElementById("tlTyping");
+                if (t) t.remove();
+            }
+
+            function sendMessage() {
+                var text = input.value.trim();
+                if (!text || isLoading) return;
+                suggs.innerHTML = "";
+                appendMsg("user", escHtml(text));
+                input.value = "";
+                input.style.height = "auto";
+                isLoading = true;
+                sendBtn.disabled = true;
+                showTyping();
+                fetch(API_ENDPOINT, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: text,
+                            context: window.scanCtx || {}
+                        })
+                    })
+                    .then(function(r) {
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        hideTyping();
+                        if (data.success) {
+                            appendMsg("bot", escHtml(data.reply));
+                        } else {
+                            appendMsg("bot", "<span style='color:#f87171'>⚠️ " + escHtml(data.message || "Something went wrong.") + "</span>");
+                        }
+                    })
+                    .catch(function() {
+                        hideTyping();
+                        appendMsg("bot", "<span style='color:#f87171'>⚠️ Could not reach the AI. Make sure Flask and Ollama are running.</span>");
+                    })
+                    .finally(function() {
+                        isLoading = false;
+                        sendBtn.disabled = false;
+                        input.focus();
+                    });
+            }
+            sendBtn.addEventListener("click", sendMessage);
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            input.addEventListener("input", function() {
+                this.style.height = "auto";
+                this.style.height = Math.min(this.scrollHeight, 80) + "px";
+            });
+
+            function escHtml(s) {
+                return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+            }
+        })();
+    </script>
+</body>
+
+</html>

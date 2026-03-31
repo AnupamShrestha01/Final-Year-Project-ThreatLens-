@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens | Login</title>
+    <link rel="stylesheet" href="../css/auth.css">
+    <script defer src="../js/auth.js"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <img src="../assets/logo.png" class="auth-logo">
+            <h2>Login to ThreatLens</h2>
+
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+
+            <button onclick="login()">Login</button>
+
+            <p class="switch">
+                Don’t have an account?
+                <a href="register.html">Register</a>
+            </p>
+
+            <p id="loginError" class="error"></p>
+        </div>
+    </div>
+</body>
+
+</html>

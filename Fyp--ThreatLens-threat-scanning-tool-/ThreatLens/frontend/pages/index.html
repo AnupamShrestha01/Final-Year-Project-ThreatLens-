@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatLens — Scan</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* ── Stats Grid ── */
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: var(--card-bg, #1a1a2e);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 18px 14px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(144, 202, 249, 0.4);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .stat-card.malicious::before {
+            background: #ff4444;
+        }
+        
+        .stat-card.suspicious::before {
+            background: #ff8800;
+        }
+        
+        .stat-card.clean::before {
+            background: #00c853;
+        }
+        
+        .stat-icon {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text, #e0e0e0);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-card.malicious .stat-value {
+            color: #ff4444;
+        }
+        
+        .stat-card.suspicious .stat-value {
+            color: #ff8800;
+        }
+        
+        .stat-card.clean .stat-value {
+            color: #00c853;
+        }
+        /* ── Recent Scans ── */
+        
+        .recent-scans-card {
+            background: var(--card-bg, #1a1a2e);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        
+        .recent-header h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text, #e0e0e0);
+        }
+        
+        .view-all-link {
+            font-size: 0.82rem;
+            color: #90caf9;
+            text-decoration: none;
+        }
+        
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+        
+        .recent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+        
+        .recent-type-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            background: rgba(144, 202, 249, 0.1);
+            color: #90caf9;
+            border: 1px solid rgba(144, 202, 249, 0.2);
+        }
+        
+        .recent-target {
+            flex: 1;
+            font-size: 0.83rem;
+            color: var(--text, #ccc);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .recent-verdict {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        
+        .recent-verdict.Malicious {
+            background: rgba(255, 68, 68, 0.15);
+            color: #ff4444;
+        }
+        
+        .recent-verdict.Suspicious {
+            background: rgba(255, 136, 0, 0.15);
+            color: #ff8800;
+        }
+        
+        .recent-verdict.Clean {
+            background: rgba(0, 200, 83, 0.12);
+            color: #00c853;
+        }
+        
+        .recent-date {
+            font-size: 0.75rem;
+            color: #666;
+            white-space: nowrap;
+        }
+        /* Light mode */
+        
+        body.light .stat-card {
+            background: #fff;
+            border-color: #e8e8e8;
+        }
+        
+        body.light .stat-value {
+            color: #1a1a2e;
+        }
+        
+        body.light .recent-scans-card {
+            background: #fff;
+            border-color: #e8e8e8;
+        }
+        
+        body.light .recent-target {
+            color: #333;
+        }
+        
+        body.light .recent-date {
+            color: #999;
+        }
+    </style>
+
+    <!-- JS -->
+    <script defer src="../js/scan.js"></script>
+
+    <!-- 🔐 AUTH PROTECTION -->
+    <script>
+        if (!sessionStorage.getItem("uid")) {
+            window.location.href = "login.html";
+        }
+    </script>
+</head>
+
+<body class="dark">
+
+    <!-- ================= HEADER ================= -->
+    <header class="header">
+        <div class="brand">
+            <img src="../assets/logo.png" class="logo">
+            <div class="brand-text">
+                <h1>ThreatLens</h1>
+                <span>One lens. Total threat visibility.</span>
+            </div>
+        </div>
+
+        <!-- HEADER ACTIONS -->
+        <div class="header-actions">
+            <button id="themeToggle" title="Toggle Theme">☀️</button>
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar">
+            <div class="profile">
+                <div class="avatar">👤</div>
+                <p id="username">User</p>
+            </div>
+
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="index.html" style="background:rgba(37,99,235,0.25);color:#60a5fa;border-left:3px solid #2563eb;padding-left:17px">Scan</a>
+                <a href="history.html">Scan History</a>
+                <a href="reports.html">Reports</a>
+                <a href="profile.html">Profile</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- ================= CONTENT ================= -->
+        <main class="content">
+
+            <!-- SLOGAN -->
+            <div class="slogan">
+                <h2>See threats clearly before they see you</h2>
+                <p>Scan files, URLs, domains & hashes using multi-engine analysis</p>
+            </div>
+
+            <!-- ================= SCANS ================= -->
+            <div class="vertical-scans">
+
+                <!-- FILE SCAN -->
+                <div class="card">
+                    <h3>File Scan</h3>
+                    <input type="file" id="fileInput">
+                    <div class="scan-actions">
+                        <button class="primary-btn" onclick="scanFile()">Submit File</button>
+                    </div>
+                </div>
+
+                <!-- URL / DOMAIN / IP -->
+                <div class="card">
+                    <h3>URL / Domain / IP Scan</h3>
+                    <input type="text" id="urlInput" placeholder="Enter URL, Domain or IP address">
+                    <div class="scan-actions">
+                        <button class="primary-btn" onclick="scanURL()">Search</button>
+                    </div>
+                </div>
+
+                <!-- FILE HASH -->
+                <div class="card">
+                    <h3>File Hash Scan</h3>
+                    <input type="text" id="hashInput" placeholder="Enter MD5 / SHA1 / SHA256">
+                    <div class="scan-actions">
+                        <button class="primary-btn" onclick="scanHash()">Search</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= SCRIPTS ================= -->
+    <script>
+        /* USERNAME */
+        document.getElementById("username").innerText =
+            sessionStorage.getItem("userName") || "User";
+
+        /* LOGOUT */
+        document.getElementById("logoutBtn").onclick = () => {
+            sessionStorage.clear();
+            location.href = "login.html";
+        };
+
+        /* THEME TOGGLE */
+        const body = document.body;
+        const toggleBtn = document.getElementById("themeToggle");
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+            body.className = savedTheme;
+            toggleBtn.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        }
+
+        toggleBtn.onclick = () => {
+            if (body.classList.contains("dark")) {
+                body.className = "light";
+                toggleBtn.textContent = "🌙";
+                localStorage.setItem("theme", "light");
+            } else {
+                body.className = "dark";
+                toggleBtn.textContent = "☀️";
+                localStorage.setItem("theme", "dark");
+            }
+        };
+    </script>
+
+</body>
+
+</html>
